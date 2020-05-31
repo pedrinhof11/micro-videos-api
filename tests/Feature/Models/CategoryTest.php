@@ -91,9 +91,7 @@ class CategoryTest extends TestCase
         ];
         $category->update($data);
 
-        foreach ($data as $key => $value) {
-            $this->assertEquals($value, $category->{$key});
-        }
+        $this->assertDatabaseHas($this->category->getTable(), $category->toArray());
     }
 
     public function testDestroy()
