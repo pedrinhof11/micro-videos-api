@@ -6,6 +6,7 @@
 /.docker/dbdata
 /.idea/
 .env
+.env.testing
 .env.backup
 .phpunit.result.cache
 Homestead.json
