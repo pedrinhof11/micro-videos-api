@@ -3,21 +3,33 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Category;
+use Exception;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\TestSaves;
+use Tests\Traits\TestValidations;
 
 class CategoryControllerTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseMigrations, TestValidations, TestSaves;
+
+    protected $model = Category::class;
+    private $category;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->category = factory($this->model)->create();
+    }
 
     public function testIndex()
     {
-        $categories = factory(Category::class, 20)->create();
+        factory($this->model, 20)->create();
         $response = $this->get(route('categories.index'));
-
+        $categories = Category::all();
         $response
             ->assertStatus(200)
             ->assertJson($categories->toArray());
@@ -25,39 +37,37 @@ class CategoryControllerTest extends TestCase
 
     public function testShow()
     {
-        $category = factory(Category::class)->create();
-        $response = $this->get(route('categories.show', ['category' => $category->id]));
-
-        $response
-            ->assertStatus(200)
-            ->assertJson($category->toArray());
+        $response = $this->get(route('categories.show', ['category' => $this->category->id]));
+        $response->assertStatus(200)
+            ->assertJson($this->category->toArray());
     }
 
     public function testInvalidationWhenDataEmpty()
     {
         $response = $this->json('POST', route('categories.store', []));
-        $response
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name'])
-            ->assertJsonMissingValidationErrors(['is_active', 'description'])
-            ->assertJsonFragment([
-                trans('validation.required', ['attribute' => 'name'])
-            ]);
+        $this->assertInvalidationFields($response, ['name'], 'required');
+        $response->assertJsonMissingValidationErrors(['is_active', 'description']);
+    }
+
+    public function testInvalidationNameRequired()
+    {
+        $data = [ 'name' => '' ];
+        $this->assertInvalidationInStoreAction($data, 'required');
+        $this->assertInvalidationInUpdateAction($data, 'required');
     }
 
     public function testInvalidationNameMax()
     {
-        $response = $this->json('POST', route('categories.store', [
-            'name' => str_repeat('a', 256)
-        ]));
+        $data = [ 'name' => str_repeat('a', 256) ];
+        $this->assertInvalidationInStoreAction($data, 'max.string', ['max' => 255]);
+        $this->assertInvalidationInUpdateAction($data, 'max.string', ['max' => 255]);
+    }
 
-        $response
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name'])
-            ->assertJsonMissingValidationErrors(['is_active', 'description'])
-            ->assertJsonFragment([
-                trans('validation.max.string', ['attribute' => 'name', 'max' => 255])
-            ]);
+    public function testInvalidationIsActive()
+    {
+        $data = [ 'is_active' => 'a' ];
+        $this->assertInvalidationInStoreAction($data, 'boolean');
+        $this->assertInvalidationInUpdateAction($data, 'boolean');
     }
 
     public function testInvalidationNameMaxAndIsActive()
@@ -67,117 +77,120 @@ class CategoryControllerTest extends TestCase
             'is_active' => 'a'
         ]));
 
-        $response
-            ->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'is_active'])
-            ->assertJsonMissingValidationErrors(['description'])
-            ->assertJsonFragment([
-                trans('validation.max.string', ['attribute' => 'name', 'max' => 255]),
-            ])
-            ->assertJsonFragment([
-                trans('validation.boolean', ['attribute' => 'is active'])
-            ]);
+        $this->assertInvalidationFields($response, ['name'], 'max.string', ['max' => 255]);
+        $this->assertInvalidationFields($response, ['is_active'], 'boolean');
+        $response->assertJsonMissingValidationErrors(['description']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testStore()
     {
-        $response = $this->json('POST', route('categories.store', [
+        $data = [
             'name'      => 'test',
             'is_active' => true
-        ]));
-
-        $categoryId = $response->json('id');
-        $category = Category::find($categoryId);
-
-        $response
-            ->assertStatus(201)
-            ->assertJson($category->toArray())
-            ->assertJsonFragment([
-                'is_active' => true,
-                'description' => null
-            ]);
+        ];
+        $expected = $data + ['description' => null, 'deleted_at' => null];
+        $response = $this->assertStore($data, $expected);
+        $response->assertJsonStructure([
+            'created_at',  'updated_at', 'deleted_at'
+        ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testStoreIsActiveFalseAndDescription()
     {
-        $response = $this->json('POST', route('categories.store', [
+        $data =[
             'name'        => 'test',
             'description' => 'description',
             'is_active'   => false
-        ]));
-
-        $categoryId = $response->json('id');
-        $category = Category::find($categoryId);
-
-        $response
-            ->assertStatus(201)
-            ->assertJson($category->toArray())
-            ->assertJsonFragment([
-                'is_active' => false,
-                'description' => 'description'
-            ]);
+        ];
+        $expected = $data + ['deleted_at' => null];
+        $response = $this->assertStore($data, $expected);
+        $response->assertJsonStructure([
+            'created_at',  'updated_at', 'deleted_at'
+        ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdate()
     {
-        $category = factory(Category::class)->create([
+        $this->category = factory($this->model)->create([
             'description' => 'Teste Description',
             'is_active' => false,
         ]);
-        $response = $this->json('PUT', route('categories.update', ['category' => $category->id]),
-            [
-                'name'        => 'test',
-                'description' => 'test Updated',
-                'is_active'   => true
-            ]
-        );
-
-        $categoryId = $response->json('id');
-        $category = Category::find($categoryId);
-
-        $response
-            ->assertStatus(200)
-            ->assertJson($category->toArray())
-            ->assertJsonFragment([
-                'is_active' => true,
-                'description' => 'test Updated'
-            ]);
+        $data = [
+            'name'        => 'test',
+            'description' => 'test Updated',
+            'is_active'   => true
+        ];
+        $expected = $data + ['deleted_at' => null];
+        $response = $this->assertUpdate($data, $expected);
+        $response->assertJsonStructure([
+            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
+        ]);
     }
 
-    public function testUpdateWithDescriptionEmpty()
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWhenDescriptionEmpty()
     {
-        $category = factory(Category::class)->create([
-            'description' => 'Teste Description',
-            'is_active' => false,
+        $data = [
+            'name'        => 'test Name',
+            'description' => '',
+            'is_active'   => false
+        ];
+        $expected = array_merge($data + ['description' => null]);
+        $response = $this->assertUpdate($data, $expected);
+        $response->assertJsonStructure([
+            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
         ]);
-        $response = $this->json('PUT', route('categories.update', ['category' => $category->id]),
-            [
-                'name' => 'test Name',
-                'description' => '',
-                'is_active' => false
-            ]
-        );
+    }
 
-        $categoryId = $response->json('id');
-        $category = Category::find($categoryId);
-
-
-        $response
-            ->assertStatus(200)
-            ->assertJson($category->toArray())
-            ->assertJsonFragment([
-                'description' => null
-            ]);
+    /**
+     * @throws Exception
+     */
+    public function testUpdateWhenDescriptionNotNull()
+    {
+        $data = [
+            'name'        => 'test Name',
+            'description' => 'description not null',
+            'is_active'   => false
+        ];
+        $expected = array_merge($data + ['description' => 'description not null']);
+        $response = $this->assertUpdate($data, $expected);
+        $response->assertJsonStructure([
+            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
+        ]);
     }
 
     public function testDestroy()
     {
-        $category = factory(Category::class)->create();
-        $response = $this->delete(route('categories.destroy', ['category' => $category->id]));
+        $response = $this->delete(route('categories.destroy', ['category' => $this->category->id]));
         $response->assertStatus(204);
-        $this->assertNull(Category::find($category->id));
-        $this->assertSoftDeleted($category->getTable(), $category->toArray());
+        $this->assertNull(Category::find($this->category->id));
+        $this->assertSoftDeleted($this->category->getTable(), $this->category->toArray());
 
     }
 
+    protected function routeStore()
+    {
+        return route('categories.store');
+    }
+
+    protected function routeUpdate()
+    {
+        return route('categories.update', ['category' => $this->category->id]);
+    }
+
+    protected function getTable(): string
+    {
+        return (new $this->model)->getTable();
+    }
 }
