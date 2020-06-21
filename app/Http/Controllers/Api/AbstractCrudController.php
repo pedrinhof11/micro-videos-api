@@ -5,12 +5,8 @@ namespace App\Http\Controllers\Api;
 
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest;
-use App\Models\Category;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 abstract class AbstractCrudController extends Controller
 {
@@ -18,7 +14,9 @@ abstract class AbstractCrudController extends Controller
 
     protected abstract function model(): string;
 
-    protected abstract function rulesStore();
+    protected abstract function rulesStore(): array;
+
+    protected abstract function rulesUpdate(): array;
 
     public function __construct()
     {
@@ -27,9 +25,14 @@ abstract class AbstractCrudController extends Controller
 
     public function index()
     {
-        return $this->model()::all();
+        return $this->modelInstance::all();
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function store(Request $request)
     {
         $data = $this->validate($request, $this->rulesStore());
@@ -38,38 +41,47 @@ abstract class AbstractCrudController extends Controller
         return $obj;
     }
 
-    protected function findOrFail($id)
+
+    public function show($key)
     {
-        $keyName = $this->modelInstance->getRouteKeyName();
-        return $this->modelInstance->newQuery()->where($keyName, $id)->firstOrFail();
+        return $this->findOrFail($key);
     }
 
-    private function makeModelInstance()
+    /**
+     * @param Request $request
+     * @param $key
+     * @return Model
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function update(Request $request, $key)
+    {
+        $model = $this->findOrFail($key);
+        $data = $this->validate($request, $this->rulesUpdate());
+        $model->update($data);
+        return $model;
+    }
+
+    /**
+     * @param $key
+     * @return \Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function destroy($key)
+    {
+        $model = $this->findOrFail($key);
+        $model->delete();
+        return response()->noContent();
+    }
+
+    protected function findOrFail($key): Model
+    {
+        $keyName = $this->modelInstance->getRouteKeyName();
+        return $this->modelInstance->newQuery()->where($keyName, $key)->firstOrFail();
+    }
+
+    private function makeModelInstance(): void
     {
         $model = $this->model();
         $this->modelInstance = (new $model);
     }
-
-//    public function show(Category $category)
-//    {
-//        return $category;
-//    }
-
-//    public function update(CategoryRequest $request, Category $category)
-//    {
-//        $data = $request->validated();
-//        $category->update($data);
-//        return $category;
-//    }
-//
-//    /**
-//     * @param Category $category
-//     * @return Response
-//     * @throws Exception
-//     */
-//    public function destroy(Category $category)
-//    {
-//        $category->delete();
-//        return response()->noContent();
-//    }
 }

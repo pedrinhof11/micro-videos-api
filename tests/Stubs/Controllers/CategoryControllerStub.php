@@ -9,16 +9,23 @@ use Tests\Stubs\Models\CategoryStub;
 
 class CategoryControllerStub extends AbstractCrudController
 {
+    private array $rules = [
+        'name'        => 'required|max:255',
+        'description' => 'nullable|string'
+    ];
+
     protected function model(): string
     {
         return CategoryStub::class;
     }
 
-    protected function rulesStore()
+    protected function rulesStore(): array
     {
-        return [
-            'name'        => 'required|max:255',
-            'description' => 'nullable|string'
-        ];
+        return $this->rules;
+    }
+
+    protected function rulesUpdate(): array
+    {
+        return $this->rules;
     }
 }

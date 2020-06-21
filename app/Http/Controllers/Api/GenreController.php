@@ -8,41 +8,25 @@ use App\Models\Genre;
 use Exception;
 use Illuminate\Http\Response;
 
-class GenreController extends Controller
+class GenreController extends AbstractCrudController
 {
-    public function index()
+    private array $rules = [
+        'name'      => 'required|max:255',
+        'is_active' => 'nullable|boolean'
+    ];
+
+    protected function model(): string
     {
-        return Genre::all();
+        return Genre::class;
     }
 
-    public function store(GenreRequest $request)
+    protected function rulesStore(): array
     {
-        $data = $request->validated();
-        $genre = Genre::query()->create($data);
-        $genre->refresh();
-        return $genre;
+        return $this->rules;
     }
 
-    public function show(Genre $genre)
+    protected function rulesUpdate(): array
     {
-        return $genre;
-    }
-
-    public function update(GenreRequest $request, Genre $genre)
-    {
-        $data = $request->validated();
-        $genre->update($data);
-        return $genre;
-    }
-
-    /**
-     * @param Genre $genre
-     * @return Response
-     * @throws Exception
-     */
-    public function destroy(Genre $genre)
-    {
-        $genre->delete();
-        return response()->noContent();
+        return $this->rules;
     }
 }

@@ -92,6 +92,37 @@ class AbstractCrudControllerTest extends TestCase
         $reflectionMethod = $reflectionClass->getMethod('findOrFail');
         $reflectionMethod->setAccessible(true);
 
-        $result = $reflectionMethod->invokeArgs($this->controller, [0]);
+        $reflectionMethod->invokeArgs($this->controller, [0]);
     }
+
+    public function testShow()
+    {
+        $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
+        $result = $this->controller->show($stub->id)->toArray();
+        $expected = CategoryStub::find(1)->toArray();
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testUpdate()
+    {
+        $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
+        $request = \Mockery::mock(Request::class);
+        $request
+            ->shouldReceive('all')
+            ->once()
+            ->andReturn(['name' => 'test_name', 'description' => 'test_description']);
+        $result = $this->controller->update($request, $stub->id)->toArray();
+        $expected = CategoryStub::find(1)->toArray();
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testDestroy()
+    {
+        $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
+        $response = $this->controller->destroy($stub->id);
+        $this->createTestResponse($response)
+            ->assertNoContent();
+        $this->assertDeleted($stub);
+    }
+
 }

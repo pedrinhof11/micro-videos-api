@@ -2,48 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
-use Exception;
-use Illuminate\Http\Response;
 
-class CategoryController extends Controller
+class CategoryController extends AbstractCrudController
 {
 
-    public function index()
+    private array $rules = [
+        'name'        => 'required|max:255',
+        'description' => 'nullable|string',
+        'is_active'   => 'nullable|boolean'
+    ];
+
+    protected function model(): string
     {
-        return Category::all();
+        return Category::class;
     }
 
-    public function store(CategoryRequest $request)
+    protected function rulesStore(): array
     {
-        $data = $request->validated();
-        $category = Category::query()->create($data);
-        $category->refresh();
-        return $category;
+        return $this->rules;
     }
 
-    public function show(Category $category)
+    protected function rulesUpdate(): array
     {
-        return $category;
-    }
-
-    public function update(CategoryRequest $request, Category $category)
-    {
-        $data = $request->validated();
-        $category->update($data);
-        return $category;
-    }
-
-    /**
-     * @param Category $category
-     * @return Response
-     * @throws Exception
-     */
-    public function destroy(Category $category)
-    {
-        $category->delete();
-        return response()->noContent();
+        return $this->rules;
     }
 }
