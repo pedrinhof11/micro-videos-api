@@ -67,8 +67,6 @@ class CategoryTest extends TestCase
 
         $uuid = Uuid::fromString($category->id);
 
-        $uuid = Uuid::fromString($category->id);
-
         $this->assertInstanceOf(Uuid::class, $uuid);
         $this->assertSame($category->id, $uuid->toString());
         $this->assertEquals('test Create', $category->name);
