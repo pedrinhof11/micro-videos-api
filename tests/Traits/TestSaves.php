@@ -5,8 +5,8 @@ namespace Tests\Traits;
 
 
 use Exception;
-use Illuminate\Foundation\Testing\TestResponse;
 use Illuminate\Http\Response;
+use Illuminate\Testing\TestResponse;
 
 trait TestSaves
 {
@@ -56,7 +56,7 @@ trait TestSaves
             ->assertJson($expectedData + ['id' => $response->json('id')]);
     }
 
-    private function assertInDatabase($response)
+    private function assertInDatabase(TestResponse $response)
     {
         $this->assertDatabaseHas($this->getTable(), $response->json());
     }

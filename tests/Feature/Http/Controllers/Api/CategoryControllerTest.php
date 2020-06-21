@@ -174,8 +174,8 @@ class CategoryControllerTest extends TestCase
     {
         $response = $this->delete(route('categories.destroy', ['category' => $this->category->id]));
         $response->assertStatus(204);
-        $this->assertNull(Category::find($this->category->id));
-        $this->assertSoftDeleted($this->category->getTable(), $this->category->toArray());
+        $this->assertNull($this->model::find($this->category->id));
+        $this->assertSoftDeleted($this->category);
 
     }
 
