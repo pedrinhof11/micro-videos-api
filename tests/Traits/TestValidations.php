@@ -38,18 +38,14 @@ trait TestValidations
     {
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-            ->assertJsonValidationErrors($fields)
-            ->assertJsonFragment($this->ruleFieldFragment($rule, $fields, $ruleParams));
-    }
+            ->assertJsonValidationErrors($fields);
 
-
-    private function ruleFieldFragment(string $rule, array $fields, array $ruleParams = [])
-    {
-        $fragment = [];
         foreach ($fields as $field) {
             $fieldName = str_replace('_', ' ', $field);
-            array_push($fragment, trans("validation.{$rule}",  ['attribute' => $fieldName] + $ruleParams));
+            $response->assertJsonFragment([
+                trans("validation.{$rule}",  ['attribute' => $fieldName] + $ruleParams)
+            ]);
+
         }
-        return $fragment;
     }
 }

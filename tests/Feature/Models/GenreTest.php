@@ -65,8 +65,6 @@ class GenreTest extends TestCase
 
         $uuid = Uuid::fromString($genre->id);
 
-        $uuid = Uuid::fromString($genre->id);
-
         $this->assertInstanceOf(Uuid::class, $uuid);
         $this->assertSame($genre->id, $uuid->toString());
         $this->assertEquals('test Create', $genre->name);
