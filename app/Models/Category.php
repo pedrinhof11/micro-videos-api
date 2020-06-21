@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\SerializeDateTrait;
 use App\Models\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use SoftDeletes, UuidTrait;
+    use SoftDeletes, UuidTrait, SerializeDateTrait;
 
     protected $keyType = "string";
 
@@ -23,15 +24,4 @@ class Category extends Model
     protected $casts = [
         'is_active' => 'boolean'
     ];
-
-    /**
-     * Prepare a date for array / JSON serialization.
-     *
-     * @param  \DateTimeInterface  $date
-     * @return string
-     */
-    protected function serializeDate(\DateTimeInterface $date)
-    {
-        return $date->format('Y-m-d H:i:s');
-    }
 }
