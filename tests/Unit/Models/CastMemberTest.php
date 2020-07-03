@@ -35,7 +35,7 @@ class CastMemberTest extends TestCase
     public function testIfUseTraitsAttribute()
     {
         $traits =  [SoftDeletes::class, UuidTrait::class, SerializeDateTrait::class];
-        $castMemberTraits = array_keys(class_uses(Category::class));
+        $castMemberTraits = array_keys(class_uses(CastMember::class));
         $this->assertEquals($traits, $castMemberTraits);
     }
 
