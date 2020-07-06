@@ -7,6 +7,7 @@ use App\Http\Requests\GenreRequest;
 use App\Models\CastMember;
 use App\Models\Genre;
 use App\Models\Video;
+use App\Rules\GenresHasCategoriesRule;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,24 +23,20 @@ class VideoController extends AbstractCrudController
             'title'         => 'required|max:255',
             'description'   => 'required',
             'year_launched' => 'required|date_format:Y',
-            'opened'        => 'boolean',
+            'opened'        => 'nullable|boolean',
             'rating'        => 'required|in:'. implode(',', Video::RATING_LIST),
             'duration'      => 'required|integer',
-            'categories_id' => 'required|array|exists:categories,id',
-            'genres_id'     => 'required|array|exists:genres,id',
+            'video_file'    => 'nullable|file|mimetypes:video/mp4|max:2000',
+            'categories_id' => ['required', 'array', 'exists:categories,id,deleted_at,NULL'],
+            'genres_id'     => ['required', 'array', 'exists:genres,id,deleted_at,NULL'],
         ];
     }
 
     public function store(Request $request)
     {
+        $this->addRuleIfGenreHasCategories($request);
         $data = $this->validate($request, $this->rulesStore());
-
-        $video = \DB::transaction(function () use ($request, $data) {
-            $video = $this->model()::create($data);
-            $this->handleRelations($video, $request);
-            return $video;
-        });
-
+        $video = Video::create($data);
         $video->refresh();
         return $video;
     }
@@ -47,13 +44,16 @@ class VideoController extends AbstractCrudController
     public function update(Request $request, $key)
     {
         $video = $this->findOrFail($key);
+        $this->addRuleIfGenreHasCategories($request);
         $data = $this->validate($request, $this->rulesUpdate());
-        $video = \DB::transaction(function () use ($request, $data, $video) {
-            $video->update($data);
-            $this->handleRelations($video, $request);
-            return $video;
-        });
+        $video->update($data);
         return $video;
+    }
+
+    private function addRuleIfGenreHasCategories(Request $request) {
+        $this->rules['genres_id'][] = new GenresHasCategoriesRule(
+            is_array($request->get('categories_id')) ? $request->get('categories_id') : []
+        );
     }
 
     protected function handleRelations($video, Request $request)
