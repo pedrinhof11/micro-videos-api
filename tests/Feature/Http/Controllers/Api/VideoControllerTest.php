@@ -12,16 +12,18 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Storage;
 use Tests\Exceptions\TestException;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\TestSaves;
+use Tests\Traits\TestUploads;
 use Tests\Traits\TestValidations;
 
 class VideoControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestUploads;
 
     protected $model = Video::class;
     private $video;
@@ -152,24 +154,7 @@ class VideoControllerTest extends TestCase
     public function testInvalidationVideoFileField()
     {
         \Storage::fake();
-        $data = [
-            'video_file' => 'asdf'
-        ];
-        $this->assertInvalidationInStoreAction($data, 'file');
-        $this->assertInvalidationInUpdateAction($data, 'file');
-
-        $data = [
-            'video_file' => UploadedFile::fake()->create('photo1.jpg', '1000', 'image/jpg'),
-        ];
-        $this->assertInvalidationInStoreAction($data, 'mimetypes', ['values' => 'video/mp4']);
-        $this->assertInvalidationInUpdateAction($data, 'mimetypes', ['values' => 'video/mp4']);
-
-        $data = [
-            'video_file' => UploadedFile::fake()->create('video1.mp4')->size(2001),
-        ];
-        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => 2000]);
-        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => 2000]);
-
+        $this->assertInvalidationFile('video_file', 'mp4', 2000, 'video/mp4');
     }
 
     /**
@@ -259,6 +244,38 @@ class VideoControllerTest extends TestCase
         $expected = $data + ['deleted_at' => null];
         $this->storeVideos($data, $expected);
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function testStoreVideosWithFiles()
+    {
+        \Storage::fake();
+        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->sync($categoriesId);
+        $files = $this->getFiles();
+        $data = [
+            'title' => 'Test',
+            'description' => 'test Description',
+            'year_launched' => 2010,
+            'rating' => Video::RATING_LIST['L'],
+            'duration' => 90,
+            'categories_id' => $categoriesId,
+            'genres_id' => [$genre->id]
+        ] + $files;
+        $response = $this->postJson(
+            $this->routeStore(),
+            $data
+        );
+        $response->assertCreated();
+        $id = $response->json('id');
+        foreach ($files as $file) {
+            \Storage::assertExists("$id/{$file->hashName()}");
+        }
+    }
+
+
 
     /**
      * @param array $data
@@ -371,6 +388,36 @@ class VideoControllerTest extends TestCase
         $data = ['rating' => Video::RATING_LIST['18']];
         $expected = $data + ['deleted_at' => null];
         $this->updateVideos($data, $expected);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testUpdateVideosWithFiles()
+    {
+        \Storage::fake();
+        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->sync($categoriesId);
+        $files = $this->getFiles();
+        $data = [
+                'title' => 'Test',
+                'description' => 'test Description',
+                'year_launched' => 2010,
+                'rating' => Video::RATING_LIST['L'],
+                'duration' => 90,
+                'categories_id' => $categoriesId,
+                'genres_id' => [$genre->id]
+            ] + $files;
+        $response = $this->putJson(
+            $this->routeUpdate(),
+            $data
+        );
+        $response->assertOk();
+        $id = $response->json('id');
+        foreach ($files as $file) {
+            \Storage::assertExists("$id/{$file->hashName()}");
+        }
     }
 
     /**
@@ -492,6 +539,13 @@ class VideoControllerTest extends TestCase
         ]);
         $this->assertHasGenre($response->json('id'), (string) $genresId[1]);
         $this->assertHasGenre($response->json('id'), (string) $genresId[4]);
+    }
+
+    private function getFiles()
+    {
+        return [
+            'video_file' => UploadedFile::fake()->create('video.mp4')
+        ];
     }
 
 

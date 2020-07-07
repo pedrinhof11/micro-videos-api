@@ -1,7 +1,9 @@
 FROM php:7.4-fpm-alpine
 
-RUN apk add --no-cache openssl bash mysql-client nodejs npm
-RUN docker-php-ext-install pdo pdo_mysql
+RUN apk add --no-cache openssl bash mysql-client nodejs npm freetype-dev libjpeg-turbo-dev libpng-dev
+
+RUN docker-php-ext-configure gd --enable-gd
+RUN docker-php-ext-install -j "$(nproc)" gd pdo pdo_mysql
 
 ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
