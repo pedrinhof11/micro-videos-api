@@ -30,6 +30,13 @@ trait UploadFilesTrait
         $file->store($this->uploadDir());
     }
 
+    public function deleteOldFiles(array $files)
+    {
+        foreach ($files as $file) {
+            $this->deleteFile($file);
+        }
+    }
+
     public function deleteFiles(array $files)
     {
         foreach ($files as $file) {
