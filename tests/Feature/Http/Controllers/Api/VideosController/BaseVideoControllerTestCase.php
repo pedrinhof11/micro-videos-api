@@ -28,4 +28,19 @@ abstract class BaseVideoControllerTestCase extends TestCase
             'duration' => 90
         ];
     }
+
+    protected function routeStore()
+    {
+        return route('videos.store');
+    }
+
+    protected function routeUpdate()
+    {
+        return route('videos.update', ['video' => $this->video->id]);
+    }
+
+    protected function getTable(): string
+    {
+        return (new $this->model)->getTable();
+    }
 }
