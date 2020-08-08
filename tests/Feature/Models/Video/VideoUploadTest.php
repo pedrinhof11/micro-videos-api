@@ -11,8 +11,7 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class VideoUploadTest extends BaseVideoTest
+class VideoUploadTest extends BaseVideoTestCase
 {
-    use DatabaseMigrations;
 
 }

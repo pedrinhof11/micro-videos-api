@@ -11,13 +11,13 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-abstract class BaseVideoTest extends TestCase
+abstract class BaseVideoTestCase extends TestCase
 {
     use DatabaseMigrations;
 
     protected $data;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->data = [
