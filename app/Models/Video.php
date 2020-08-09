@@ -21,7 +21,6 @@ class Video extends Model
         '16' => '16',
         '18' => '18',
     ];
-    protected static $fileFields = ['video_file'];
 
     protected $keyType = "string";
 
@@ -34,7 +33,8 @@ class Video extends Model
         "opened",
         "rating",
         "duration",
-        "video_file"
+        "video_file",
+        "thumb_file"
     ];
 
     protected $casts = [
@@ -42,6 +42,8 @@ class Video extends Model
         "opened" => 'boolean',
         "duration" => 'integer',
     ];
+
+    protected static $fileFields = ['video_file', 'thumb_file'];
 
     public static function create(array $attributes = [])
     {
@@ -55,6 +57,9 @@ class Video extends Model
             \DB::commit();
             return $model;
         } catch (\Exception $e) {
+            if(isset($model)) {
+                $model->deleteFiles($files);
+            }
             \DB::rollBack();
             throw $e;
         }
@@ -68,9 +73,16 @@ class Video extends Model
             \DB::beginTransaction();
             $saved = parent::update($attributes, $options);
             $this->handleRelations($attributes);
+            if($saved) {
+                $this->uploadFiles($files);
+            }
             \DB::commit();
+            if($saved && !empty($files)) {
+                $this->deleteOldFiles();
+            }
             return $saved;
         } catch (\Exception $e) {
+            $this->deleteFiles($files);
             \DB::rollBack();
             throw $e;
         }

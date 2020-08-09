@@ -1,36 +1,16 @@
 <?php
 
-namespace Tests\Feature\Http\Controllers\Api;
+namespace Tests\Feature\Http\Controllers\Api\VideosController;
 
-use App\Http\Controllers\Api\VideoController;
-use App\Models\CastMember;
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Lang;
-use Tests\Exceptions\TestException;
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 
-class VideoControllerTest extends TestCase
+class VideoControllerCrudTest extends BaseVideoControllerTestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
-
-    protected $model = Video::class;
-    private $video;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->video = factory($this->model)->create();
-    }
+    use TestValidations, TestSaves;
 
     public function testIndex()
     {
@@ -149,29 +129,6 @@ class VideoControllerTest extends TestCase
 
     }
 
-    public function testInvalidationVideoFileField()
-    {
-        \Storage::fake();
-        $data = [
-            'video_file' => 'asdf'
-        ];
-        $this->assertInvalidationInStoreAction($data, 'file');
-        $this->assertInvalidationInUpdateAction($data, 'file');
-
-        $data = [
-            'video_file' => UploadedFile::fake()->create('photo1.jpg', '1000', 'image/jpg'),
-        ];
-        $this->assertInvalidationInStoreAction($data, 'mimetypes', ['values' => 'video/mp4']);
-        $this->assertInvalidationInUpdateAction($data, 'mimetypes', ['values' => 'video/mp4']);
-
-        $data = [
-            'video_file' => UploadedFile::fake()->create('video1.mp4')->size(2001),
-        ];
-        $this->assertInvalidationInStoreAction($data, 'max.file', ['max' => 2000]);
-        $this->assertInvalidationInUpdateAction($data, 'max.file', ['max' => 2000]);
-
-    }
-
     /**
      * @throws \Exception
      */
@@ -270,13 +227,7 @@ class VideoControllerTest extends TestCase
         $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
         $genre = factory(Genre::class)->create();
         $genre->categories()->sync($categoriesId);
-        $dataRaw = [
-                'title' => 'Test',
-                'description' => 'test Description',
-                'year_launched' => 2010,
-                'rating' => Video::RATING_LIST['L'],
-                'duration' => 90,
-            ] + $data;
+        $dataRaw = $this->data + $data;
         $expectedRaw = $dataRaw + ['deleted_at' => null, 'opened' => false] + $expected;
         $response = $this->assertStore($dataRaw + [
             'categories_id' => $categoriesId,
@@ -373,6 +324,7 @@ class VideoControllerTest extends TestCase
         $this->updateVideos($data, $expected);
     }
 
+
     /**
      * @param array $data
      * @param array $expected
@@ -383,13 +335,7 @@ class VideoControllerTest extends TestCase
         $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
         $genre = factory(Genre::class)->create();
         $genre->categories()->sync($categoriesId);
-        $dataRaw = [
-                'title' => 'Test',
-                'description' => 'test Description',
-                'year_launched' => 2010,
-                'rating' => Video::RATING_LIST['L'],
-                'duration' => 90
-            ] + $data;
+        $dataRaw = $this->data + $data;
         $expectedRaw = $dataRaw + ['deleted_at' => null] + $expected;
         $response = $this->assertUpdate($dataRaw + [
                 'categories_id' => $categoriesId,
@@ -494,29 +440,13 @@ class VideoControllerTest extends TestCase
         $this->assertHasGenre($response->json('id'), (string) $genresId[4]);
     }
 
-
-//
-//    public function testDestroy()
-//    {
-//        $video = factory(Genre::class)->create();
-//        $response = $this->delete(route('videos.destroy', ['video' => $video->id]));
-//        $response->assertStatus(204);
-//        $this->assertNull(Genre::find($video->id));
-//        $this->assertSoftDeleted($video->getTable(), $video->toArray());
-//    }
-
-    protected function routeStore()
+    public function testDestroy()
     {
-        return route('videos.store');
+        $response = $this->delete(route('videos.destroy', ['video' => $this->video->id]));
+        $response->assertStatus(204);
+        $this->assertNull(Video::find($this->video->id));
+        $this->assertSoftDeleted($this->video);
     }
 
-    protected function routeUpdate()
-    {
-        return route('videos.update', ['video' => $this->video->id]);
-    }
 
-    protected function getTable(): string
-    {
-        return (new $this->model)->getTable();
-    }
 }
