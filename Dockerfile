@@ -5,7 +5,7 @@ RUN apk add --no-cache shadow openssl bash mysql-client nodejs npm git freetype-
 RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j "$(nproc)" gd pdo pdo_mysql
 
-RUN touch /home/www-data/.bashrc | echo "PS1='\w\$ '" >> /home/www-data/.bashrc
+#RUN touch /home/www-data/.bashrc | echo "PS1='\w\$ '" >> /home/www-data/.bashrc
 
 ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
@@ -14,12 +14,12 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN usermod -u 1000 www-data
+#RUN usermod -u 1000 www-data
 
 WORKDIR /var/www
 
 RUN rm -rf /var/www/html && ln -s public html
 
-USER www-data
+#USER www-data
 
 EXPOSE 9000
