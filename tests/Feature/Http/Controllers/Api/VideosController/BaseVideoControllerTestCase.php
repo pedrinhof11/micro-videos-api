@@ -3,6 +3,8 @@
 
 namespace Tests\Feature\Http\Controllers\Api\VideosController;
 
+use App\Models\Category;
+use App\Models\Genre;
 use Tests\TestCase;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -19,13 +21,18 @@ abstract class BaseVideoControllerTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
+        $genre = factory(Genre::class)->create();
+        $genre->categories()->sync($categoriesId);
         $this->video = factory($this->model)->create();
         $this->data = [
             'title' => 'Title',
             'description' => 'Test Description',
             'year_launched' => 2010,
             'rating' => Video::RATING_LIST['L'],
-            'duration' => 90
+            'duration' => 90,
+            'categories_id' => $categoriesId,
+            'genres_id' => [$genre->id]
         ];
     }
 

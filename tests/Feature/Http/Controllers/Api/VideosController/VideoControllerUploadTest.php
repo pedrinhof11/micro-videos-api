@@ -7,6 +7,7 @@ use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestUploads;
@@ -62,23 +63,10 @@ class VideoControllerUploadTest extends BaseVideoControllerTestCase
     public function testStoreVideosWithFiles()
     {
         \Storage::fake();
-        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($categoriesId);
         $files = $this->getFiles();
-        $data = $this->data + [
-            'categories_id' => $categoriesId,
-            'genres_id' => [$genre->id]
-        ] + $files;
-        $response = $this->postJson(
-            $this->routeStore(),
-            $data
-        );
+        $response = $this->postJson($this->routeStore(), $this->data + $files);
         $response->assertCreated();
-        $id = $response->json('id');
-        foreach ($files as $file) {
-            \Storage::assertExists("$id/{$file->hashName()}");
-        }
+        $this->assertFilesOnPersist($response, $files);
     }
 
     /**
@@ -87,23 +75,17 @@ class VideoControllerUploadTest extends BaseVideoControllerTestCase
     public function testUpdateVideosWithFiles()
     {
         \Storage::fake();
-        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($categoriesId);
         $files = $this->getFiles();
-        $data = $this->data + [
-                'categories_id' => $categoriesId,
-                'genres_id' => [$genre->id]
-            ] + $files;
-        $response = $this->putJson(
-            $this->routeUpdate(),
-            $data
-        );
+        $response = $this->putJson($this->routeUpdate(), $this->data + $files);
         $response->assertOk();
+        $this->assertFilesOnPersist($response, $files);
+    }
+
+    private function assertFilesOnPersist(TestResponse $response, array $files)
+    {
         $id = $response->json('id');
-        foreach ($files as $file) {
-            \Storage::assertExists("$id/{$file->hashName()}");
-        }
+        $video = $this->model::find($id);
+        $this->assertFileExistsInStorage($video, $files);
     }
 
     private function getFiles()

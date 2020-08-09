@@ -12,6 +12,13 @@ trait TestUploads
 
     protected abstract function routeUpdate();
 
+    protected function assertFileExistsInStorage($model, array $files)
+    {
+        foreach ($files as $file) {
+            \Storage::assertExists($model->getFileRelativePath($file->hashName()));
+        }
+    }
+
     protected function assertInvalidationFile($field, $extension, $maxSize, $accept)
     {
         $routes = [

@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers\Api\VideosController;
 use App\Models\Category;
 use App\Models\Genre;
 use App\Models\Video;
+use Illuminate\Support\Arr;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 
@@ -224,15 +225,10 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
      */
     private function storeVideos(array $data = [], array $expected = [])
     {
-        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($categoriesId);
         $dataRaw = $this->data + $data;
-        $expectedRaw = $dataRaw + ['deleted_at' => null, 'opened' => false] + $expected;
-        $response = $this->assertStore($dataRaw + [
-            'categories_id' => $categoriesId,
-            'genres_id' => [$genre->id]
-            ], $expectedRaw);
+        $expectedData = Arr::except($dataRaw, ['categories_id', 'genres_id']);
+        $expectedRaw = $expectedData + ['deleted_at' => null, 'opened' => false] + $expected;
+        $response = $this->assertStore($dataRaw, $expectedRaw);
         $response->assertJsonStructure(['created_at', 'updated_at', 'deleted_at']);
     }
 
@@ -332,15 +328,10 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
      */
     private function updateVideos(array $data = [], array $expected = [])
     {
-        $categoriesId = factory(Category::class,2)->create()->pluck('id')->toArray();
-        $genre = factory(Genre::class)->create();
-        $genre->categories()->sync($categoriesId);
         $dataRaw = $this->data + $data;
-        $expectedRaw = $dataRaw + ['deleted_at' => null] + $expected;
-        $response = $this->assertUpdate($dataRaw + [
-                'categories_id' => $categoriesId,
-                'genres_id' => [$genre->id]
-            ], $expectedRaw);
+        $expectedData = Arr::except($dataRaw, ['categories_id', 'genres_id']);
+        $expectedRaw = $expectedData + ['deleted_at' => null] + $expected;
+        $response = $this->assertUpdate($dataRaw, $expectedRaw);
         $response->assertJsonStructure(['created_at', 'updated_at', 'deleted_at']);
     }
 
@@ -354,41 +345,35 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
     public function testSyncCategories()
     {
-        factory(Category::class,5)->create();
-        $categoriesId = Category::all()->pluck('id')->all();
+        $categoriesId = factory(Category::class,5)->create()->pluck('id')->toArray();
         $genre = factory(Genre::class)->create();
         $genre->categories()->sync($categoriesId);
-        $data = [
-            'title' => 'Test',
-            'description' => 'test Description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST['L'],
-            'duration' => 90,
-            'genres_id' => [(string) $genre->id],
-            'categories_id' => [(string) $categoriesId[0]]
-        ];
-        $response = $this->postJson($this->routeStore(), $data);
-        $this->assertHasCategory($response->json('id'), (string) $categoriesId[0]);
 
-        $data = [
-            'title' => 'Test',
-            'description' => 'test Description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST['L'],
-            'duration' => 90,
-            'genres_id' => [(string) $genre->id],
-            'categories_id' => [(string) $categoriesId[1], (string) $categoriesId[3]]
+        $sendData = Arr::except($this->data, ['categories_id', 'genres_id']);
+
+        $data = $sendData + [
+            'genres_id' => [$genre->id],
+            'categories_id' => [$categoriesId[0]]
         ];
+
+        $response = $this->postJson($this->routeStore(), $data);
+        $this->assertHasCategory($response->json('id'), $categoriesId[0]);
+
+        $data = $sendData + [
+            'genres_id' => [$genre->id],
+            'categories_id' => [$categoriesId[1],$categoriesId[3]]
+        ];
+
         $response = $this->putJson(
             route('videos.update', ['video' => $response->json('id')]),
             $data
         );
         $this->assertDatabaseMissing('category_video', [
             'video_id' => $response->json('id'),
-            'category_id' => (string) $categoriesId[0]
+            'category_id' => $categoriesId[0]
         ]);
-        $this->assertHasCategory($response->json('id'), (string) $categoriesId[1]);
-        $this->assertHasCategory($response->json('id'), (string) $categoriesId[3]);
+        $this->assertHasCategory($response->json('id'), $categoriesId[1]);
+        $this->assertHasCategory($response->json('id'), $categoriesId[3]);
     }
 
     private function assertHasGenre($videoId, $genreId)
@@ -401,32 +386,25 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
 
     public function testSyncGenres()
     {
+        $sendData = Arr::except($this->data, ['categories_id', 'genres_id']);
+
         $genres = factory(Genre::class,5)->create();
-        $genresId = Genre::all()->pluck('id')->all();
+        $genresId = $genres->pluck('id')->all();
         $categoryId = factory(Category::class)->create()->id;
         $genres->each(function ($genre) use ($categoryId) {
-            $genre->categories()->sync((string) $categoryId);
+            $genre->categories()->sync($categoryId);
         });
-        $data = [
-            'title' => 'Test',
-            'description' => 'test Description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST['L'],
-            'duration' => 90,
-            'genres_id' => [(string) $genresId[0]],
-            'categories_id' => [(string) $categoryId]
+
+        $data = $sendData + [
+            'genres_id' => [$genresId[0]],
+            'categories_id' => [$categoryId]
         ];
         $response = $this->postJson($this->routeStore(), $data);
-        $this->assertHasGenre($response->json('id'), (string) $genresId[0]);
+        $this->assertHasGenre($response->json('id'), $genresId[0]);
 
-        $data = [
-            'title' => 'Test',
-            'description' => 'test Description',
-            'year_launched' => 2010,
-            'rating' => Video::RATING_LIST['L'],
-            'duration' => 90,
-            'genres_id' => [(string) $genresId[1], (string) $genresId[4]],
-            'categories_id' => [(string) $categoryId]
+        $data = $sendData + [
+            'genres_id' => [$genresId[1], $genresId[4]],
+            'categories_id' => [$categoryId]
         ];
         $response = $this->putJson(
             route('videos.update', ['video' => $response->json('id')]),
@@ -434,10 +412,10 @@ class VideoControllerCrudTest extends BaseVideoControllerTestCase
         );
         $this->assertDatabaseMissing('genre_video', [
             'video_id' => $response->json('id'),
-            'genres_id' => (string) $genresId[0]
+            'genres_id' => $genresId[0]
         ]);
-        $this->assertHasGenre($response->json('id'), (string) $genresId[1]);
-        $this->assertHasGenre($response->json('id'), (string) $genresId[4]);
+        $this->assertHasGenre($response->json('id'), $genresId[1]);
+        $this->assertHasGenre($response->json('id'), $genresId[4]);
     }
 
     public function testDestroy()

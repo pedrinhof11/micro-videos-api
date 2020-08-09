@@ -101,4 +101,20 @@ class VideoUploadTest extends BaseVideoTestCase
         }
         $this->assertTrue($hasError);
     }
+
+    public function testFileUrl()
+    {
+        $files = [
+            "thumb_file" => 'thumb.jpg',
+            "video_file" => 'video.mp4',
+            "banner_file" => 'banner.mp4',
+            "trailer_file" =>'trailer.mp4'
+        ];
+        $video = Video::create($this->data + $files);
+        $baseUrl = config('filesystems.disks.video_local.url');
+        foreach ($files as $field => $value) {
+            $fileUrl = $video->{"{$field}_url"};
+            $this->assertEquals("{$baseUrl}/{$video->id}/{$value}", $fileUrl);
+        }
+    }
 }
