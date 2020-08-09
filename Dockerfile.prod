@@ -11,8 +11,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 WORKDIR /var/www
-RUN rm -rf /var/www/html
-RUN ln -s public html
+RUN rm -rf /var/www/html && ln -s public html
 COPY .docker/app /var/www
 
 RUN composer install \
@@ -23,12 +22,13 @@ RUN composer install \
 RUN npm install
 
 FROM php:7.4-fpm-alpine
+
 RUN apk add --no-cache mysql-client
 RUN docker-php-ext-install pdo pdo_mysql
+
 WORKDIR /var/www
 RUN rm -rf /var/www/html
 COPY --from=builder /var/www .
-
 
 EXPOSE 9000
 ENTRYPOINT ["php-fpm"]
