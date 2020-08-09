@@ -12,6 +12,7 @@ use Ramsey\Uuid\Uuid;
 trait UploadFilesTrait
 {
     public $oldFiles = [];
+
     protected abstract function uploadDir();
 
     public static function bootUploadFilesTrait()
@@ -31,7 +32,17 @@ trait UploadFilesTrait
         });
     }
 
-    /**
+    public function getFileRelativePath($fileName)
+    {
+        return "{$this->uploadDir()}/{$fileName}";
+    }
+
+    public function getFileUrl($fileName)
+    {
+        return \Storage::url($this->getFileRelativePath($fileName));
+    }
+
+        /**
      * @param UploadedFile[] $files
      */
     public function uploadFiles(array $files)

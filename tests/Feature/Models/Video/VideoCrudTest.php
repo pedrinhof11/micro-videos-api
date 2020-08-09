@@ -30,6 +30,8 @@ class VideoCrudTest extends BaseVideoTestCase
                 'opened',
                 'thumb_file',
                 'video_file',
+                'banner_file',
+                'trailer_file',
                 'created_at',
                 'updated_at',
                 'deleted_at'
@@ -50,7 +52,7 @@ class VideoCrudTest extends BaseVideoTestCase
         $this->assertDatabaseHas($video->getTable(), $this->data);
     }
 
-    public function testCreateWithRelations()
+    public function testCreateWithBasicFields()
     {
         $category = factory(Category::class)->create();
         $genre = factory(Genre::class)->create();
@@ -96,7 +98,7 @@ class VideoCrudTest extends BaseVideoTestCase
         $this->assertDatabaseHas($video->getTable(), $this->data);
     }
 
-    public function testUpdateWithRelations()
+    public function testUpdateWithBasicFields()
     {
         $category = factory(Category::class)->create();
         $genre = factory(Genre::class)->create();

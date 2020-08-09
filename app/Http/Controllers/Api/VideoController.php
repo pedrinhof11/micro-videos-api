@@ -26,7 +26,10 @@ class VideoController extends AbstractCrudController
             'opened'        => 'nullable|boolean',
             'rating'        => 'required|in:'. implode(',', Video::RATING_LIST),
             'duration'      => 'required|integer',
-            'video_file'    => 'nullable|file|mimetypes:video/mp4|max:2000',
+            'video_file'    => 'nullable|file|mimetypes:video/mp4|max:' . Video::VIDEO_FILE_MAX_SIZE,
+            'thumb_file'    => 'nullable|file|mimetypes:image/jpeg,image/png|max:' . Video::THUMB_FILE_MAX_SIZE,
+            'banner_file'   => 'nullable|file|mimetypes:image/jpeg,image/png|max:' . Video::BANNER_FILE_MAX_SIZE,
+            'trailer_file'  => 'nullable|file|mimetypes:video/mp4|max:' . Video::TRAILER_FILE_MAX_SIZE,
             'categories_id' => ['required', 'array', 'exists:categories,id,deleted_at,NULL'],
             'genres_id'     => ['required', 'array', 'exists:genres,id,deleted_at,NULL'],
         ];
