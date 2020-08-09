@@ -16,11 +16,15 @@ class VideoUploadTest extends BaseVideoTestCase
         $video = Video::create(
             $this->data + [
                 "thumb_file" => UploadedFile::fake()->image('thumb.jpg'),
-                "video_file" => UploadedFile::fake()->create('video.mp4')
+                "video_file" => UploadedFile::fake()->create('video.mp4'),
+                "banner_file" => UploadedFile::fake()->image('banner.mp4'),
+                "trailer_file" => UploadedFile::fake()->create('trailer.mp4')
             ]
         );
         \Storage::assertExists("{$video->id}/{$video->thumb_file}");
         \Storage::assertExists("{$video->id}/{$video->video_file}");
+        \Storage::assertExists("{$video->id}/{$video->banner_file}");
+        \Storage::assertExists("{$video->id}/{$video->trailer_file}");
     }
 
     public function testCreateIfRollbackFiles()
@@ -35,7 +39,9 @@ class VideoUploadTest extends BaseVideoTestCase
             $video = Video::create(
                 $this->data + [
                     "thumb_file" => UploadedFile::fake()->image('thumb.jpg'),
-                    "video_file" => UploadedFile::fake()->create('video.mp4')
+                    "video_file" => UploadedFile::fake()->create('video.mp4'),
+                    "banner_file" => UploadedFile::fake()->image('banner.mp4'),
+                    "trailer_file" => UploadedFile::fake()->create('trailer.mp4')
                 ]
             );
         } catch (TestException $e) {
@@ -50,19 +56,25 @@ class VideoUploadTest extends BaseVideoTestCase
         \Storage::fake();
         $files = [
             "thumb_file" => UploadedFile::fake()->image('thumb.jpg'),
-            "video_file" => UploadedFile::fake()->create('video.mp4')
+            "video_file" => UploadedFile::fake()->create('video.mp4'),
+            "banner_file" => UploadedFile::fake()->image('banner.mp4'),
+            "trailer_file" => UploadedFile::fake()->create('trailer.mp4')
         ];
         $video = Video::create($this->data + $files);
 
         $newFiles = [
-            "video_file" => UploadedFile::fake()->create('video.mp4')
+            "video_file" => UploadedFile::fake()->create('video.mp4'),
+            "banner_file" => UploadedFile::fake()->image('banner.mp4')
         ];
 
         $video->update($newFiles);
 
         \Storage::assertExists("{$video->id}/{$video->thumb_file}");
         \Storage::assertExists("{$video->id}/{$video->video_file}");
+        \Storage::assertExists("{$video->id}/{$video->banner_file}");
+        \Storage::assertExists("{$video->id}/{$video->trailer_file}");
         \Storage::assertMissing("{$video->id}/{$files['video_file']->hashName()}");
+        \Storage::assertMissing("{$video->id}/{$files['banner_file']->hashName()}");
     }
 
     public function testUpdateIfRollbackFiles()
@@ -78,7 +90,9 @@ class VideoUploadTest extends BaseVideoTestCase
             $video->update(
                 $this->data + [
                     "thumb_file" => UploadedFile::fake()->image('thumb.jpg'),
-                    "video_file" => UploadedFile::fake()->create('video.mp4')
+                    "video_file" => UploadedFile::fake()->create('video.mp4'),
+                    "banner_file" => UploadedFile::fake()->image('banner.mp4'),
+                    "trailer_file" => UploadedFile::fake()->create('trailer.mp4')
                 ]
             );
         } catch (TestException $e) {

@@ -22,6 +22,11 @@ class Video extends Model
         '18' => '18',
     ];
 
+    const THUMB_FILE_MAX_SIZE   = 1024 * 5;
+    const BANNER_FILE_MAX_SIZE  = 1024 * 10;
+    const TRAILER_FILE_MAX_SIZE = 1024 * 1024 * 1;
+    const VIDEO_FILE_MAX_SIZE   = 1024 * 1024 * 50;
+
     protected $keyType = "string";
 
     public $incrementing = false;
@@ -34,7 +39,9 @@ class Video extends Model
         "rating",
         "duration",
         "video_file",
-        "thumb_file"
+        "thumb_file",
+        "banner_file",
+        "trailer_file"
     ];
 
     protected $casts = [
@@ -43,7 +50,12 @@ class Video extends Model
         "duration" => 'integer',
     ];
 
-    protected static $fileFields = ['video_file', 'thumb_file'];
+    protected static $fileFields = [
+        'video_file',
+        'thumb_file',
+        'banner_file',
+        'trailer_file'
+    ];
 
     public static function create(array $attributes = [])
     {
