@@ -29,7 +29,7 @@ trait TestSaves
 
         $this->assertStatusCode($response, Response::HTTP_OK);
         $this->assertJsonExpectedData($response, $expectedData);
-        $this->assertInDatabase($response);
+        $this->assertInDatabase($response, $expectedData);
         return $response;
     }
 
@@ -45,20 +45,30 @@ trait TestSaves
         $response = $this->postJson($this->routeStore(), $data);
 
         $this->assertStatusCode($response, Response::HTTP_CREATED);
+        $this->assertInDatabase($response, $expectedData);
         $this->assertJsonExpectedData($response, $expectedData);
-        $this->assertInDatabase($response);
         return $response;
     }
 
     private function assertJsonExpectedData(TestResponse $response, array $expectedData)
     {
         $response
-            ->assertJson($expectedData + ['id' => $response->json('id')]);
+            ->assertJsonFragment($expectedData + ['id' => $this->getIdFromResponse($response)]);
     }
 
-    private function assertInDatabase(TestResponse $response)
+    private function assertInDatabase(TestResponse $response, array $expectedData)
     {
-        $this->assertDatabaseHas($this->getTable(), $response->json());
+        $this->assertDatabaseHas($this->getTable(), $expectedData + ['id' => $this->getIdFromResponse($response)]);
+    }
+
+    private function getDataFromResponse(TestResponse $response)
+    {
+        return $response->json('data') ?? $response->json();
+    }
+
+    private function getIdFromResponse(TestResponse $response)
+    {
+        return $response->json('id') ?? $response->json('data.id');
     }
 
     /**
