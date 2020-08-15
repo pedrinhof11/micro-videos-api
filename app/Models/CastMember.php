@@ -21,4 +21,8 @@ class CastMember extends Model
         "name",
         "type"
     ];
+
+    protected $casts = [
+        'type' => 'integer'
+    ];
 }

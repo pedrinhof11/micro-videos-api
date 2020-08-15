@@ -47,7 +47,7 @@ class CategoryControllerTest extends TestCase
                 'meta' => ['per_page' => $perPage]
             ]);
         $this->assertResourceCollectionPaginateStructure($response);
-        $resource = CategoryResource::collection(Category::paginate($perPage));
+        $resource = CategoryResource::collection($this->model::paginate($perPage));
         $this->assertResource($response, $resource);
     }
 
@@ -112,7 +112,7 @@ class CategoryControllerTest extends TestCase
         $expected = $data + ['description' => null, 'deleted_at' => null];
         $response = $this->assertStore($data, $expected);
         $this->assertResourceStructure($response);
-        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $resource = CategoryResource::make($this->model::find($response->json('data.id')));
         $this->assertResource($response, $resource);
     }
 

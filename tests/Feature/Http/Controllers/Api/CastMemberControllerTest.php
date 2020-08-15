@@ -2,22 +2,35 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Resources\CastMemberResource;
+use App\Http\Resources\CategoryResource;
 use App\Models\CastMember;
+use App\Models\Category;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\TestResources;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 
 class CastMemberControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestResources;
 
     protected $model = CastMember::class;
     private $castMember;
+
+    protected $resourceFields = [
+        'id',
+        "name",
+        "type",
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
 
     protected function setUp(): void
     {
@@ -30,18 +43,24 @@ class CastMemberControllerTest extends TestCase
     public function testIndex()
     {
         factory($this->model, 20)->create();
+        $perPage = 15;
         $response = $this->getJson(route('cast-members.index'));
-        $castMember = $this->model::all();
-        $response
-            ->assertStatus(200)
-            ->assertJson($castMember->toArray());
+        $response->assertOk()
+            ->assertJson([
+                'meta' => ['per_page' => $perPage]
+            ]);
+        $this->assertResourceCollectionPaginateStructure($response);
+        $resource = CastMemberResource::collection($this->model::paginate($perPage));
+        $this->assertResource($response, $resource);
     }
 
     public function testShow()
     {
         $response = $this->get(route('cast-members.show', ['cast_member' => $this->castMember->id]));
-        $response->assertStatus(200)
-            ->assertJson($this->castMember->toArray());
+        $response->assertOk();
+        $this->assertResourceStructure($response);
+        $resource = CastMemberResource::make($this->model::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     public function testInvalidationWhenDataEmpty()
@@ -93,9 +112,9 @@ class CastMemberControllerTest extends TestCase
     {
         $expected = $data + ['deleted_at' => null];
         $response = $this->assertStore($data, $expected);
-        $response->assertJsonStructure([
-            'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $this->assertResourceStructure($response);
+        $resource = CastMemberResource::make($this->model::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     /**
@@ -109,16 +128,16 @@ class CastMemberControllerTest extends TestCase
         ];
         $expected = $data + ['deleted_at' => null];
         $response = $this->assertUpdate($data, $expected);
-        $response->assertJsonStructure([
-            'id', 'name', 'type', 'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $this->assertResourceStructure($response);
+        $resource = CastMemberResource::make($this->model::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
 
     public function testDestroy()
     {
         $response = $this->delete(route('cast-members.destroy', ['cast_member' => $this->castMember->id]));
-        $response->assertStatus(204);
+        $response->assertNoContent();
         $this->assertNull($this->model::find($this->castMember->id));
         $this->assertSoftDeleted($this->castMember);
 
