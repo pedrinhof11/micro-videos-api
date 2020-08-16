@@ -45,9 +45,17 @@ class AbstractCrudControllerTest extends TestCase
     public function testIndex()
     {
         $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
+
+        $request = \Mockery::mock(Request::class);
+        $request->shouldReceive('get')
+            ->with('per_page', 15)
+            ->andReturn(15);
+        $result = $this->controller->index($request)->response()->getData(true);
+        $this->assertArrayHasKey('meta', $result);
+        $this->assertArrayHasKey('links', $result);
+
         $expected = [$stub->toArray()];
-        $result = $this->controller->index()->toArray();
-        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $result['data']);
     }
 
     public function testInvalidationDataInStore()
@@ -69,9 +77,9 @@ class AbstractCrudControllerTest extends TestCase
             ->shouldReceive('all')
             ->once()
             ->andReturn(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->store($request)->toArray();
+        $result = $this->controller->store($request)->response()->getData(true);
         $expected = CategoryStub::find(1)->toArray();
-        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $result['data']);
     }
 
     public function testIfFindOrFailFetchModelInstance()
@@ -98,22 +106,22 @@ class AbstractCrudControllerTest extends TestCase
     public function testShow()
     {
         $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->show($stub->id)->toArray();
+        $result = $this->controller->show($stub->id)->response()->getData(true);
         $expected = CategoryStub::find(1)->toArray();
-        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $result['data']);
     }
 
     public function testUpdate()
     {
         $stub = CategoryStub::create(['name' => 'test_name', 'description' => 'test_description']);
-        $request = \Mockery::mock(Request::class);
+        $request = $this->makeRequest();
         $request
             ->shouldReceive('all')
             ->once()
             ->andReturn(['name' => 'test_name', 'description' => 'test_description']);
-        $result = $this->controller->update($request, $stub->id)->toArray();
+        $result = $this->controller->update($request, $stub->id)->response()->getData(true);
         $expected = CategoryStub::find(1)->toArray();
-        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $result['data']);
     }
 
     public function testDestroy()
@@ -123,6 +131,11 @@ class AbstractCrudControllerTest extends TestCase
         $this->createTestResponse($response)
             ->assertNoContent();
         $this->assertDeleted($stub);
+    }
+
+    private function makeRequest()
+    {
+        return \Mockery::mock(Request::class);
     }
 
 }
