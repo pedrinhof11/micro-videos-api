@@ -7,12 +7,20 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 abstract class AbstractCrudController extends Controller
 {
     protected Model $modelInstance;
 
+    protected $hasPagination = true;
+    protected $perPage = 15;
+
     protected abstract function model(): string;
+
+    protected abstract function resource(): string;
+
+    protected abstract function resourceCollection(): string;
 
     protected abstract function rulesStore(): array;
 
@@ -23,9 +31,18 @@ abstract class AbstractCrudController extends Controller
         $this->makeModelInstance();
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return $this->modelInstance::all();
+        $data = $this->hasPagination
+            ? $this->modelInstance::paginate($request->get('per_page', $this->perPage))
+            : $this->modelInstance::all();
+
+        $resource = $this->resourceCollection();
+        $refResource = new \ReflectionClass($resource);
+
+        return $refResource->isSubclassOf(ResourceCollection::class)
+            ? $resource::make($data)
+            : $resource::collection($data);
     }
 
     /**
@@ -38,13 +55,13 @@ abstract class AbstractCrudController extends Controller
         $data = $this->validate($request, $this->rulesStore());
         $obj = $this->model()::create($data);
         $obj->refresh();
-        return $obj;
+        return $this->resource()::make($obj);
     }
 
 
     public function show($key)
     {
-        return $this->findOrFail($key);
+        return $this->resource()::make($this->findOrFail($key));
     }
 
     /**
@@ -58,7 +75,7 @@ abstract class AbstractCrudController extends Controller
         $model = $this->findOrFail($key);
         $data = $this->validate($request, $this->rulesUpdate());
         $model->update($data);
-        return $model;
+        return $this->resource()::make($model);
     }
 
     /**

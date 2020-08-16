@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Exception;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -9,15 +10,26 @@ use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\TestResources;
 use Tests\Traits\TestSaves;
 use Tests\Traits\TestValidations;
 
 class CategoryControllerTest extends TestCase
 {
-    use DatabaseMigrations, TestValidations, TestSaves;
+    use DatabaseMigrations, TestValidations, TestSaves, TestResources;
 
     protected $model = Category::class;
     private $category;
+
+    protected $resourceFields = [
+        'id',
+        "name",
+        "description",
+        "is_active",
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
 
     protected function setUp(): void
     {
@@ -28,18 +40,24 @@ class CategoryControllerTest extends TestCase
     public function testIndex()
     {
         factory($this->model, 20)->create();
+        $perPage = 15;
         $response = $this->get(route('categories.index'));
-        $categories = Category::all();
-        $response
-            ->assertStatus(200)
-            ->assertJson($categories->toArray());
+        $response->assertOk()
+            ->assertJson([
+                'meta' => ['per_page' => $perPage]
+            ]);
+        $this->assertResourceCollectionPaginateStructure($response);
+        $resource = CategoryResource::collection($this->model::paginate($perPage));
+        $this->assertResource($response, $resource);
     }
 
     public function testShow()
     {
         $response = $this->get(route('categories.show', ['category' => $this->category->id]));
-        $response->assertStatus(200)
-            ->assertJson($this->category->toArray());
+        $response->assertOk();
+        $this->assertResourceStructure($response);
+        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     public function testInvalidationWhenDataEmpty()
@@ -93,9 +111,9 @@ class CategoryControllerTest extends TestCase
         ];
         $expected = $data + ['description' => null, 'deleted_at' => null];
         $response = $this->assertStore($data, $expected);
-        $response->assertJsonStructure([
-            'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $this->assertResourceStructure($response);
+        $resource = CategoryResource::make($this->model::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     /**
@@ -110,9 +128,8 @@ class CategoryControllerTest extends TestCase
         ];
         $expected = $data + ['deleted_at' => null];
         $response = $this->assertStore($data, $expected);
-        $response->assertJsonStructure([
-            'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     /**
@@ -131,9 +148,8 @@ class CategoryControllerTest extends TestCase
         ];
         $expected = $data + ['deleted_at' => null];
         $response = $this->assertUpdate($data, $expected);
-        $response->assertJsonStructure([
-            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     /**
@@ -146,11 +162,10 @@ class CategoryControllerTest extends TestCase
             'description' => '',
             'is_active'   => false
         ];
-        $expected = array_merge($data + ['description' => null]);
+        $expected = ['description' => null] + $data;
         $response = $this->assertUpdate($data, $expected);
-        $response->assertJsonStructure([
-            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     /**
@@ -165,9 +180,8 @@ class CategoryControllerTest extends TestCase
         ];
         $expected = array_merge($data + ['description' => 'description not null']);
         $response = $this->assertUpdate($data, $expected);
-        $response->assertJsonStructure([
-            'id', 'name', 'description', 'is_active', 'created_at',  'updated_at', 'deleted_at'
-        ]);
+        $resource = CategoryResource::make(Category::find($response->json('data.id')));
+        $this->assertResource($response, $resource);
     }
 
     public function testDestroy()

@@ -11,7 +11,10 @@ class VideoSeeder extends Seeder
      */
     public function run()
     {
+        $dir = Storage::getDriver()->getAdapter()->getPathPrefix();
+        File::deleteDirectory($dir, true);
         $genres = \App\Models\Genre::all();
+        \Illuminate\Database\Eloquent\Model::reguard();
         factory(\App\Models\Video::class, 100)
             ->create()
             ->each(function (\App\Models\Video $video) use ($genres) {
