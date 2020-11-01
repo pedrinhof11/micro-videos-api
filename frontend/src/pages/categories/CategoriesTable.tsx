@@ -3,6 +3,7 @@ import MUIDataTable, { MUIDataTableColumnDef} from "mui-datatables";
 import {useEffect, useState} from "react";
 import {httpVideo} from "../../http";
 import {Chip} from "@material-ui/core";
+import { dateFormatFromIso } from '../../utils';
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -10,19 +11,26 @@ const columns: MUIDataTableColumnDef[] = [
     name: "is_active",
     label: "Ativo?",
     options: {
-      customBodyRender: (value, meta) => {
-        return value ? <Chip label="Sim"/> : <Chip label="Não"/>;
+      customBodyRender: (value: boolean) => {
+        return value ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
       }
     }
   },
-  { name: "created_at", label: "Criado em" }
+  { 
+    name: "created_at",
+    label: "Criado em",
+    options: {
+      customBodyRender: (value) => {
+      return <span>{dateFormatFromIso(value, 'dd/MM/yyyy')}</span>
+      }
+    } 
+  }
 ];
 
 export default () => {
 
   const [categories, setCategories] = useState([])
 
-  // eslint-disable-next-line
   useEffect(() => {
     const fetchData = async () => {
       const {data: { data }} = await httpVideo.get("categories");

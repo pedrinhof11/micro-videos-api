@@ -5,14 +5,14 @@ import {BrowserRouter} from "react-router-dom";
 import ViewRouter from "./routes/ViewRouter";
 import Breadcrumbs from "./components/Breadcrumbs";
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <React.Fragment>
       <BrowserRouter>
         <Navbar/>
         <Box paddingTop={'70px'}>
-          <Breadcrumbs></Breadcrumbs>
-          <ViewRouter/>
+          <Breadcrumbs />
+          <ViewRouter />
         </Box>
       </BrowserRouter>
     </React.Fragment>

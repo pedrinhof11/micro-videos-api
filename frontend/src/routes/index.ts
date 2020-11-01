@@ -1,6 +1,8 @@
 import {RouteProps} from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
-import CategoryPage from "../pages/categories/Categories";
+import Categories from "../pages/categories/Categories";
+import CastMembers from "../pages/castMembers/CastMembers";
+import Genres from "../pages/genres/Genres";
 
 export interface appRouteProps extends RouteProps {
     name: string,
@@ -19,14 +21,21 @@ const routes : appRouteProps[] = [
         name: "categories",
         label: "Listar Categorias",
         path: '/categories',
-        component: CategoryPage,
+        component: Categories,
         exact: true
     },
     {
-        name: "categories.create",
-        label: "Criar Categoria",
-        path: '/categories/create',
-        component: CategoryPage,
+        name: "castMembers",
+        label: "Listar Membros do Elenco",
+        path: '/cast-members',
+        component: CastMembers,
+        exact: true
+    },
+    {
+        name: "genres",
+        label: "Listar Gêneros",
+        path: '/genres',
+        component: Genres,
         exact: true
     }
 ]
