@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react'
-import { Container, Typography, makeStyles } from '@material-ui/core'
+import {Container, Typography, makeStyles, Box} from '@material-ui/core'
 
 const useStyles = makeStyles({
     title: {
@@ -18,7 +18,9 @@ export default function Page({ title, children }: PageProps): ReactElement {
             <Typography className={classes.title} component="h1" variant="h5">
                 { title }
             </Typography>
-            { children }
+            <Box paddingTop={1}>
+                { children }
+            </Box>
         </Container>
     )
 }
