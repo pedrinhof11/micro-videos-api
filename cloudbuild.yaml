@@ -23,28 +23,36 @@ steps:
 
   - id: "Chown in /var/www"
     name: 'docker'
-    args: ['exec','-u','root','-t','app','chown','-R','www-data:www-data','/var/www']
+    args: ['exec', '-u', 'root', '-t', 'micro-videos-app', 'chown', '-R', 'www-data:www-data', '/var/www']
 
   - id: "Rodando composer install"
     name: 'docker'
     args: ['exec', '-t', 'micro-videos-app', 'composer', 'install', '-d', '/var/www/backend']
 
-  - id: "Copiando .env"
+  - id: "Copiando .env do backend"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.example', '.env']
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.example', '/var/www/backend/.env']
 
-  - id: "Copiando .env.testing"
+  - id: "Copiando .env.testing do backend"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.testing.example', '.env.testing']
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.testing.example', '/var/www/backend/.env.testing']
 
   - id: "Rodando key:generate"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'key:generate']
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'key:generate']
 
   - id: "Rodando migrations"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'migrate']
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'migrate']
 
   - id: "Rodando Tests"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'test']
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'test']
+  
+  - id: "Copiando .env do fontend"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/fontend/.env.example', '/var/www/fontend/.env']
+
+  - id: "Rodando o npm install"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'npm', 'install', '--prefix', '/var/www/frontend']
