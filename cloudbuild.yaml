@@ -7,8 +7,8 @@ steps:
       - --location=global
       - --keyring=micro-videos-upload
       - --key=service-account
-      - --ciphertext-file=./storage/credencials/google/service-account-storage.json.encrypted
-      - --plaintext-file=./storage/credencials/google/service-account-storage.json
+      - --ciphertext-file=./backend/storage/credencials/google/service-account-storage.json.encrypted
+      - --plaintext-file=./backend/storage/credencials/google/service-account-storage.json
 
   - id: "Rodando docker-compose"
     name: 'gcr.io/$PROJECT_ID/docker-compose:1.25.5'
