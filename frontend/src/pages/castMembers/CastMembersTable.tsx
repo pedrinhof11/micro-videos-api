@@ -14,7 +14,7 @@ const columns: MUIDataTableColumnDef[] = [
     name: "type",
     label: "Tipo",
     options: {
-      customBodyRender: (value) => CastMemberTypesEnum[value]
+      customBodyRender: (value) => CastMemberTypesEnum[value as any]
     }
   },
   { 

@@ -11,8 +11,8 @@ const columns: MUIDataTableColumnDef[] = [
     name: "categories", 
     label: "Categorias",
     options: {
-      customBodyRender: (categories: Category[]) => {
-        return categories.map((value) => value.name).join(", ")
+      customBodyRender: (categories) => {
+        return (categories as any).map((value: Category) => value.name).join(", ")
       }
     }
   },
@@ -20,8 +20,8 @@ const columns: MUIDataTableColumnDef[] = [
     name: "is_active",
     label: "Ativo?",
     options: {
-      customBodyRender: (value: boolean) => {
-        return value ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
+      customBodyRender: (value) => {
+        return value as any ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
       }
     }
   },
