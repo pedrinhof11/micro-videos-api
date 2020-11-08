@@ -3,6 +3,8 @@ import Dashboard from "../pages/Dashboard";
 import Categories from "../pages/categories/Categories";
 import CastMembers from "../pages/castMembers/CastMembers";
 import Genres from "../pages/genres/Genres";
+import CategoriesPageForm from "../pages/categories/CategoriesPageForm";
+import CastMembersPageForm from "../pages/castMembers/CastMembersPageForm";
 
 export interface appRouteProps extends RouteProps {
     name: string,
@@ -25,10 +27,24 @@ const routes : appRouteProps[] = [
         exact: true
     },
     {
+        name: "categories.create",
+        label: "Criar Categoria",
+        path: '/categories/create',
+        component: CategoriesPageForm,
+        exact: true
+    },
+    {
         name: "castMembers",
-        label: "Listar Membros do Elenco",
+        label: "Listar Membros de Elenco",
         path: '/cast-members',
         component: CastMembers,
+        exact: true
+    },
+    {
+        name: "castMembers.create",
+        label: "Criar Membro de Elenco",
+        path: '/categories/create',
+        component: CastMembersPageForm,
         exact: true
     },
     {
