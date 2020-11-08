@@ -1,28 +1,58 @@
 steps:
+  - id: "Decriptando service account storage"
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - kms
+      - decrypt
+      - --location=global
+      - --keyring=micro-videos-upload
+      - --key=service-account
+      - --ciphertext-file=./backend/storage/credencials/google/service-account-storage.json.encrypted
+      - --plaintext-file=./backend/storage/credencials/google/service-account-storage.json
+
   - id: "Rodando docker-compose"
-    name: 'gcr.io/$PROJECT_ID/docker-compose:1.25.5'
+    name: 'docker/compose'
     args: ['-f', 'docker-compose.prod.yaml', 'up', '-d']
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=codeflix-micro-videos
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.googleapis.com/codeflix-micro-videos
+      - TESTING_PROD=true
+
+  - id: "Chown in /var/www"
+    name: 'docker'
+    args: ['exec', '-u', 'root', '-t', 'micro-videos-app', 'chown', '-R', 'www-data:www-data', '/var/www']
 
   - id: "Rodando composer install"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'composer', 'install']
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'composer', 'install', '-d', '/var/www/backend']
 
-  - id: "Copiando .env"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.example', '.env']
+  - id: "Copiando .env do backend"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.example', '/var/www/backend/.env']
 
-  - id: "Copiando .env.testing"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '.env.testing.example', '.env.testing']
+  - id: "Copiando .env.testing do backend"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/backend/.env.testing.example', '/var/www/backend/.env.testing']
 
   - id: "Rodando key:generate"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'key:generate']
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'key:generate']
 
   - id: "Rodando migrations"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'migrate']
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'migrate']
 
   - id: "Rodando Tests"
-    name: 'gcr.io/cloud-builders/docker'
-    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/artisan', 'test']
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'test']
+  
+  - id: "Copiando .env do fontend"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/fontend/.env.example', '/var/www/fontend/.env']
+
+  - id: "Rodando o npm install"
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'npm', 'install', '--prefix', '/var/www/frontend']
