@@ -43,7 +43,7 @@ const routes : appRouteProps[] = [
     {
         name: "castMembers.create",
         label: "Criar Membro de Elenco",
-        path: '/categories/create',
+        path: '/cast-members/create',
         component: CastMembersPageForm,
         exact: true
     },

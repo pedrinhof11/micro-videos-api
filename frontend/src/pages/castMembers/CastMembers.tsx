@@ -17,7 +17,7 @@ const CastMembers = (props: Props) => {
         title="Adicionar Membro de Elenco"
         size="small"
         component={Link}
-        to="/members/create"
+        to="/cast-members/create"
       >
         <AddIcon/>
       </Fab>
