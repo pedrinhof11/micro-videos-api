@@ -17,7 +17,7 @@ export enum CastMemberTypesEnum {
 
 export interface CastMember extends BaseModel {
   name: string,
-  type: number
+  type: keyof typeof CastMemberTypesEnum
 }
 
 export interface Genre extends BaseModel {

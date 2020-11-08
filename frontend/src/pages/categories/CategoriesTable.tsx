@@ -1,13 +1,13 @@
 import * as React from 'react';
-import MUIDataTable, { MUIDataTableColumnDef} from "mui-datatables";
-import { useEffect, useState } from "react";
-import { Chip } from "@material-ui/core";
-import { dateFormatFromIso } from '../../utils';
+import {useEffect, useState} from "react";
+import MUIDataTable, {MUIDataTableColumnDef} from "mui-datatables";
+import {Chip} from "@material-ui/core";
+import {dateFormatFromIso} from '../../utils';
 import CategoryResource from '../../http/CategoryResource';
-import { Category } from '../../types/models';
+import {Category} from '../../types/models';
 
 const columns: MUIDataTableColumnDef[] = [
-  { name: "name", label: "Nome" },
+  {name: "name", label: "Nome"},
   {
     name: "is_active",
     label: "Ativo?",
@@ -28,12 +28,12 @@ const columns: MUIDataTableColumnDef[] = [
   }
 ];
 
-export default () => {
+const CategoriesTable = () => {
 
   const [categories, setCategories] = useState<Category[]>([])
-  
+
   const fetchData = async () => {
-    const { data: { data } } = await CategoryResource.list();
+    const {data: {data}} = await CategoryResource.list();
     setCategories(data);
   }
 
@@ -49,3 +49,5 @@ export default () => {
     />
   );
 };
+
+export default CategoriesTable

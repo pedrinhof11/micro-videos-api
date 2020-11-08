@@ -1,15 +1,11 @@
-import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
-import React, { useEffect, useState } from "react";
-import { httpVideo } from "../../http";
-import { dateFormatFromIso } from "../../utils";
-
-enum CastMemberTypesEnum {
-  Diretor = 1,
-  Ator = 2,
-}
+import React, {useEffect, useState} from "react";
+import MUIDataTable, {MUIDataTableColumnDef} from "mui-datatables";
+import {httpVideo} from "../../http";
+import {dateFormatFromIso} from "../../utils";
+import {CastMemberTypesEnum} from "../../types/models.d";
 
 const columns: MUIDataTableColumnDef[] = [
-  { name: "name", label: "Nome" },
+  {name: "name", label: "Nome"},
   {
     name: "type",
     label: "Tipo",
@@ -17,7 +13,7 @@ const columns: MUIDataTableColumnDef[] = [
       customBodyRender: (value) => CastMemberTypesEnum[value as any]
     }
   },
-  { 
+  {
     name: "created_at",
     label: "Criado em",
     options: {

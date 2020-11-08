@@ -5,6 +5,7 @@ import CastMembers from "../pages/castMembers/CastMembers";
 import Genres from "../pages/genres/Genres";
 import CategoriesPageForm from "../pages/categories/CategoriesPageForm";
 import CastMembersPageForm from "../pages/castMembers/CastMembersPageForm";
+import GenresPageForm from "../pages/genres/GenresPageForm";
 
 export interface appRouteProps extends RouteProps {
     name: string,
@@ -53,7 +54,14 @@ const routes : appRouteProps[] = [
         path: '/genres',
         component: Genres,
         exact: true
-    }
+    },
+    {
+        name: "genres.create",
+        label: "Criar Gênero",
+        path: '/genres/create',
+        component: GenresPageForm,
+        exact: true
+    },
 ]
 
 export default routes;
