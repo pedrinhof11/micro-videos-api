@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 import { Chip } from "@material-ui/core";
 import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
-import { httpVideo } from "../../http";
 import { dateFormatFromIso } from "../../utils";
 import { Category } from "../../types/models"
+import GenreResource from "../../http/GenreResource";
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -11,8 +11,8 @@ const columns: MUIDataTableColumnDef[] = [
     name: "categories", 
     label: "Categorias",
     options: {
-      customBodyRender: (categories: Category[]) => {
-        return categories.map((value) => value.name).join(", ")
+      customBodyRender: (categories) => {
+        return (categories as any).map((value: Category) => value.name).join(", ")
       }
     }
   },
@@ -20,8 +20,8 @@ const columns: MUIDataTableColumnDef[] = [
     name: "is_active",
     label: "Ativo?",
     options: {
-      customBodyRender: (value: boolean) => {
-        return value ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
+      customBodyRender: (value) => {
+        return value as any ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
       }
     }
   },
@@ -29,7 +29,7 @@ const columns: MUIDataTableColumnDef[] = [
     name: "created_at",
     label: "Criado em",
     options: {
-      customBodyRender: (value, meta) => (
+      customBodyRender: (value) => (
         <span>{dateFormatFromIso(value, 'dd/MM/yyyy')}</span>
       )
     } 
@@ -41,7 +41,7 @@ const GenresTable = () => {
   const [genres, setGenres] = useState([]);
   
   const fetchData = async () => {
-    const {data: {data}} = await httpVideo.get("genres");
+    const {data: {data}} = await GenreResource.list();
     setGenres(data);
   }
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Link, { LinkProps } from '@material-ui/core/Link';
@@ -9,6 +8,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import routes from "../routes";
 import RouteParser from "route-parser";
 import {Box, Container} from "@material-ui/core";
+
+/* eslint-disable no-nested-ternary */
 
 const breadcrumbNameMap: { [key: string]: string } = {};
 routes.forEach(route => { breadcrumbNameMap[route.path as string] = route.label });

@@ -1,18 +1,19 @@
 import * as React from 'react';
-import MUIDataTable, { MUIDataTableColumnDef} from "mui-datatables";
 import {useEffect, useState} from "react";
-import {httpVideo} from "../../http";
+import MUIDataTable, {MUIDataTableColumnDef} from "mui-datatables";
 import {Chip} from "@material-ui/core";
-import { dateFormatFromIso } from '../../utils';
+import {dateFormatFromIso} from '../../utils';
+import CategoryResource from '../../http/CategoryResource';
+import {Category} from '../../types/models';
 
 const columns: MUIDataTableColumnDef[] = [
-  { name: "name", label: "Nome" },
+  {name: "name", label: "Nome"},
   {
     name: "is_active",
     label: "Ativo?",
     options: {
-      customBodyRender: (value: boolean) => {
-        return value ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
+      customBodyRender: (value) => {
+        return value as any ? <Chip label="Sim" color="primary" /> : <Chip label="Não" color="secondary" />;
       }
     }
   },
@@ -27,17 +28,18 @@ const columns: MUIDataTableColumnDef[] = [
   }
 ];
 
-export default () => {
+const CategoriesTable = () => {
 
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<Category[]>([])
+
+  const fetchData = async () => {
+    const {data: {data}} = await CategoryResource.list();
+    setCategories(data);
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      const {data: { data }} = await httpVideo.get("categories");
-      setCategories(data);
-    }
     fetchData()
-  }, [])
+  })
 
   return (
     <MUIDataTable
@@ -47,3 +49,5 @@ export default () => {
     />
   );
 };
+
+export default CategoriesTable
