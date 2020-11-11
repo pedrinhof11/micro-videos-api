@@ -14,7 +14,7 @@ const CategoriesForm = () => {
   const classes = useStyles();
 
   const buttonProps : ButtonProps = {
-    variant: "outlined",
+    variant: "contained",
     className: classes.submit
   }
 
@@ -56,12 +56,12 @@ const CategoriesForm = () => {
       />
       <FormControlLabel
         inputRef={register}
-        control={<Checkbox name="is_active" defaultChecked />}
+        control={<Checkbox name="is_active" defaultChecked color="primary" />}
         label="Ativo?"
         labelPlacement="end"
       />
       <Box dir="rtl">
-        <Button {...buttonProps} onClick={onSave}>Salvar</Button>
+        <Button color="primary" {...buttonProps} onClick={onSave}>Salvar</Button>
         <Button {...buttonProps} type="submit">Salvar e continuar editado</Button>
       </Box>
     </form>
