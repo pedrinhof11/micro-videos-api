@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
 import { Chip } from "@material-ui/core";
 import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
-import { dateFormatFromIso } from "../../utils";
-import { Category, Genre } from "../../types/models";
+import React, { useEffect, useState } from "react";
 import GenreResource from "../../http/GenreResource";
+import { Category, Genre } from "../../types/models";
+import { dateFormatFromIso } from "../../utils";
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -56,9 +56,7 @@ const GenresTable = () => {
     fetchData();
   }, []);
 
-  return (
-    <MUIDataTable title="Membros do Elenco" columns={columns} data={genres} />
-  );
+  return <MUIDataTable title="Gêneros" columns={columns} data={genres} />;
 };
 
 export default GenresTable;

@@ -1,10 +1,10 @@
 import { RouteProps } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
-import Categories from "../pages/categories/Categories";
 import CastMembers from "../pages/castMembers/CastMembers";
-import Genres from "../pages/genres/Genres";
-import CategoriesPageForm from "../pages/categories/CategoriesPageForm";
 import CastMembersPageForm from "../pages/castMembers/CastMembersPageForm";
+import Categories from "../pages/categories/Categories";
+import CategoriesPageForm from "../pages/categories/CategoriesPageForm";
+import Dashboard from "../pages/Dashboard";
+import Genres from "../pages/genres/Genres";
 import GenresPageForm from "../pages/genres/GenresPageForm";
 
 export interface appRouteProps extends RouteProps {
@@ -56,6 +56,13 @@ const routes: appRouteProps[] = [
     exact: true,
   },
   {
+    name: "castMembers.edit",
+    label: "Editar Membro de Elenco",
+    path: "/cast-members/:id/edit",
+    component: CastMembersPageForm,
+    exact: true,
+  },
+  {
     name: "genres",
     label: "Listar Gêneros",
     path: "/genres",
@@ -66,6 +73,13 @@ const routes: appRouteProps[] = [
     name: "genres.create",
     label: "Criar Gênero",
     path: "/genres/create",
+    component: GenresPageForm,
+    exact: true,
+  },
+  {
+    name: "genres.edit",
+    label: "EditarGênero",
+    path: "/genres/:id/edit",
     component: GenresPageForm,
     exact: true,
   },

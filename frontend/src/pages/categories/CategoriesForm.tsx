@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  TextField,
-  FormControlLabel,
-  Checkbox,
   Box,
   Button,
   ButtonProps,
+  Checkbox,
+  FormControlLabel,
   makeStyles,
+  TextField,
   Theme,
 } from "@material-ui/core";
-import { Controller, useForm } from "react-hook-form";
-import CategoryResource from "../../http/CategoryResource";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { yup } from "../../utils/yup";
-import { useHistory, useParams } from "react-router-dom";
-import { Category } from "../../types/models";
 import { useSnackbar } from "notistack";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useHistory, useParams } from "react-router-dom";
+import CategoryResource from "../../http/CategoryResource";
+import { Category } from "../../types/models";
+import { yup } from "../../utils/yup";
 
 const useStyles = makeStyles((theme: Theme) => ({
   submit: {
@@ -32,10 +32,9 @@ const CategoriesForm = () => {
   const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
-
   const { id } = useParams<{ id: string }>();
-  const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [category, setCategory] = useState<Category | null>(null);
 
   const { register, handleSubmit, getValues, errors, reset, control } = useForm(
     {
@@ -45,7 +44,7 @@ const CategoriesForm = () => {
 
   const buttonProps: ButtonProps = {
     className: classes.submit,
-    color: 'secondary',
+    color: "secondary",
     variant: "contained",
     disabled: loading,
   };
@@ -58,16 +57,26 @@ const CategoriesForm = () => {
     if (!id) {
       return;
     }
-    setLoading(true);
-    CategoryResource.get(id)
-      .then(({ data: { data } }) => {
+
+    async function getCategory() {
+      setLoading(true);
+      try {
+        const {
+          data: { data },
+        } = await CategoryResource.get(id);
         setCategory(data);
         reset(data as any);
-      })
-      .finally(() => {
+      } catch (error) {
+        snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
+          variant: "error",
+        });
+      } finally {
         setLoading(false);
-      });
-  }, [id, reset]);
+      }
+    }
+
+    getCategory();
+  }, [id, reset, snackbar]);
 
   const onSubmit = async (formData: any, event?: React.BaseSyntheticEvent) => {
     setLoading(true);
