@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
 import {
-  TextField,
   Box,
   Button,
   ButtonProps,
-  makeStyles,
-  Theme,
   FormControl,
   FormControlLabel,
   FormLabel,
+  makeStyles,
   Radio,
   RadioGroup,
+  TextField,
+  Theme,
 } from "@material-ui/core";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import CastMemberResource from "../../http/CastMemberResource";
 
@@ -25,8 +25,9 @@ const CastMembersForm = () => {
   const classes = useStyles();
 
   const buttonProps: ButtonProps = {
-    variant: "outlined",
     className: classes.submit,
+    color: "secondary",
+    variant: "contained",
   };
 
   const { register, handleSubmit, getValues, setValue } = useForm();

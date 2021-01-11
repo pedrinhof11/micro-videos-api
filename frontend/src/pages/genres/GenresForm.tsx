@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
   ButtonProps,
   makeStyles,
+  MenuItem,
   TextField,
   Theme,
-  MenuItem,
 } from "@material-ui/core";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import GenreResource from "../../http/GenreResource";
 import CategoryResource from "../../http/CategoryResource";
+import GenreResource from "../../http/GenreResource";
 import { Category } from "../../types/models";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -24,8 +24,9 @@ const GenresForm = () => {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const buttonProps: ButtonProps = {
-    variant: "outlined",
     className: classes.submit,
+    color: "secondary",
+    variant: "contained",
   };
   const { register, handleSubmit, getValues, setValue, watch } = useForm({
     defaultValues: {

@@ -1,14 +1,14 @@
-import React, { ReactElement } from "react";
 import { IconButton, Menu as MuiMenu, MenuItem } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
-import routes, { appRouteProps } from "../../routes";
+import React, { ReactElement } from "react";
 import { Link } from "react-router-dom";
+import routes, { appRouteProps } from "../../routes";
 
 const listRoutes: any = {
   dashboard: "Dashboard",
   categories: "Categorias",
   castMembers: "Membros de Elenco",
-  genres: "Dashboard",
+  genres: "Gêneros",
 };
 const menuRoutes = routes.filter((route) =>
   Object.keys(listRoutes).includes(route.name)

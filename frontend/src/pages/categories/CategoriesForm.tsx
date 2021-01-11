@@ -44,8 +44,9 @@ const CategoriesForm = () => {
   );
 
   const buttonProps: ButtonProps = {
-    variant: "contained",
     className: classes.submit,
+    color: 'secondary',
+    variant: "contained",
     disabled: loading,
   };
 

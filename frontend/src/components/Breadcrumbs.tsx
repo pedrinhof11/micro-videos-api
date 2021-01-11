@@ -1,13 +1,13 @@
-import React from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Link, { LinkProps } from "@material-ui/core/Link";
-import Typography from "@material-ui/core/Typography";
+import { Box, Container } from "@material-ui/core";
 import MuiBreadcrumbs from "@material-ui/core/Breadcrumbs";
+import Link, { LinkProps } from "@material-ui/core/Link";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import Typography from "@material-ui/core/Typography";
+import React from "react";
 import { Route } from "react-router";
 import { Link as RouterLink } from "react-router-dom";
-import routes from "../routes";
 import RouteParser from "route-parser";
-import { Box, Container } from "@material-ui/core";
+import routes from "../routes";
 
 /* eslint-disable no-nested-ternary */
 
@@ -83,7 +83,7 @@ export default function Breadcrumbs() {
   }
   return (
     <Container className={classes.root}>
-      <Box paddingBottom={1}>
+      <Box paddingTop={2} paddingBottom={1}>
         <Route>
           {({ location }: { location: Location }) => makeBreadcrumb(location)}
         </Route>
