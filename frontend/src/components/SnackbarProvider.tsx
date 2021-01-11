@@ -1,14 +1,28 @@
-import React from "react";
+import { IconButton, makeStyles, Theme } from "@material-ui/core";
+import CloseIcon from "@material-ui/icons/Close";
 import {
   SnackbarProvider as NotistackProvider,
-  SnackbarProviderProps,
+  SnackbarProviderProps
 } from "notistack";
-import { IconButton } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
+import React from "react";
+
+const useStyles = makeStyles((theme: Theme) => ({
+  variantSuccess: {
+    backgroundColor: theme.palette.success.main,
+  },
+  variantError: {
+    backgroundColor: theme.palette.error.main,
+  },
+  variantInfo: {
+    backgroundColor: theme.palette.primary.main,
+  },
+}));
 
 export const SnackbarProvider: React.FC<SnackbarProviderProps> = (props) => {
   let snackbarProviderRef: NotistackProvider | null;
+  const classes = useStyles();
   const defaultProps: SnackbarProviderProps = {
+    classes,
     autoHideDuration: 3000,
     maxSnack: 3,
     anchorOrigin: {
