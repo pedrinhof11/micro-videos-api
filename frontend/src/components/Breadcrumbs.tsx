@@ -1,24 +1,26 @@
-import React from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import Link, { LinkProps } from '@material-ui/core/Link';
-import Typography from '@material-ui/core/Typography';
-import MuiBreadcrumbs from '@material-ui/core/Breadcrumbs';
-import { Route } from 'react-router';
-import { Link as RouterLink } from 'react-router-dom';
+import React from "react";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import Link, { LinkProps } from "@material-ui/core/Link";
+import Typography from "@material-ui/core/Typography";
+import MuiBreadcrumbs from "@material-ui/core/Breadcrumbs";
+import { Route } from "react-router";
+import { Link as RouterLink } from "react-router-dom";
 import routes from "../routes";
 import RouteParser from "route-parser";
-import {Box, Container} from "@material-ui/core";
+import { Box, Container } from "@material-ui/core";
 
 /* eslint-disable no-nested-ternary */
 
 const breadcrumbNameMap: { [key: string]: string } = {};
-routes.forEach(route => { breadcrumbNameMap[route.path as string] = route.label });
+routes.forEach((route) => {
+  breadcrumbNameMap[route.path as string] = route.label;
+});
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: 'flex',
-      flexDirection: 'column'
+      display: "flex",
+      flexDirection: "column",
     },
     linkRouter: {
       color: "#4db5ab",
@@ -28,9 +30,9 @@ const useStyles = makeStyles((theme: Theme) =>
       "&:hover": {
         color: "#055a52",
         textDecoration: "none",
-      }
-    }
-  }),
+      },
+    },
+  })
 );
 
 interface LinkRouterProps extends LinkProps {
@@ -38,34 +40,44 @@ interface LinkRouterProps extends LinkProps {
   replace?: boolean;
 }
 
-const LinkRouter = (props: LinkRouterProps) => <Link {...props} component={RouterLink as any} />;
+const LinkRouter = (props: LinkRouterProps) => (
+  <Link {...props} component={RouterLink as any} />
+);
 
 export default function Breadcrumbs() {
   const classes = useStyles();
   function makeBreadcrumb(location: Location) {
-    const pathnames = location.pathname.split('/').filter((x) => x);
-    pathnames.unshift("/")
+    const pathnames = location.pathname.split("/").filter((x) => x);
+    pathnames.unshift("/");
     return (
       <MuiBreadcrumbs aria-label="breadcrumb">
-        {
-          pathnames.map((value, index) => {
-            const last = index === pathnames.length - 1;
-            const to = `${pathnames.slice(0, index + 1).join('/').replace("//", "/")}`;
-            const route = Object.keys(breadcrumbNameMap).find(path => new RouteParser(path).match(to));
-            if(!route) {
-              return false;
-            }
-            return last ? (
-              <Typography color="textPrimary" key={to}>
-                {breadcrumbNameMap[route]}
-              </Typography>
-            ) : (
-              <LinkRouter color="inherit" to={to} key={to} className={classes.linkRouter}>
-                {breadcrumbNameMap[route]}
-              </LinkRouter>
-            );
-          })
-        }
+        {pathnames.map((value, index) => {
+          const last = index === pathnames.length - 1;
+          const to = `${pathnames
+            .slice(0, index + 1)
+            .join("/")
+            .replace("//", "/")}`;
+          const route = Object.keys(breadcrumbNameMap).find((path) =>
+            new RouteParser(path).match(to)
+          );
+          if (!route) {
+            return false;
+          }
+          return last ? (
+            <Typography color="textPrimary" key={to}>
+              {breadcrumbNameMap[route]}
+            </Typography>
+          ) : (
+            <LinkRouter
+              color="inherit"
+              to={to}
+              key={to}
+              className={classes.linkRouter}
+            >
+              {breadcrumbNameMap[route]}
+            </LinkRouter>
+          );
+        })}
       </MuiBreadcrumbs>
     );
   }

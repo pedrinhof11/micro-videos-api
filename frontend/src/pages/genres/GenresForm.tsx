@@ -1,58 +1,66 @@
-import React, {useEffect, useState} from 'react';
-import {Box, Button, ButtonProps, makeStyles, TextField, Theme, MenuItem} from "@material-ui/core";
-import {useForm} from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  ButtonProps,
+  makeStyles,
+  TextField,
+  Theme,
+  MenuItem,
+} from "@material-ui/core";
+import { useForm } from "react-hook-form";
 import GenreResource from "../../http/GenreResource";
 import CategoryResource from "../../http/CategoryResource";
-import {Category} from "../../types/models";
+import { Category } from "../../types/models";
 
 const useStyles = makeStyles((theme: Theme) => ({
   submit: {
-    margin: theme.spacing(1)
-  }
-}))
+    margin: theme.spacing(1),
+  },
+}));
 
 const GenresForm = () => {
-
   const classes = useStyles();
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const buttonProps: ButtonProps = {
     variant: "outlined",
-    className: classes.submit
-  }
-  const {register, handleSubmit, getValues, setValue, watch} = useForm({
+    className: classes.submit,
+  };
+  const { register, handleSubmit, getValues, setValue, watch } = useForm({
     defaultValues: {
-      categories_id: []
-    }
+      categories_id: [],
+    },
   });
 
   const fetchCategories = async () => {
-    const {data: {data}} = await CategoryResource.list();
+    const {
+      data: { data },
+    } = await CategoryResource.list();
     setCategories(data);
-  }
+  };
 
   useEffect(() => {
-    register({name: "categories_id"})
-  }, [register])
+    register({ name: "categories_id" });
+  }, [register]);
 
   useEffect(() => {
-    fetchCategories()
-  }, [])
+    fetchCategories();
+  }, []);
 
   const onSubmit = async (formData: any, event?: any) => {
     try {
-      const {data} = await GenreResource.create(formData);
+      const { data } = await GenreResource.create(formData);
       console.log(data);
     } finally {
-
     }
-  }
+  };
 
-  const onSave = async () => onSubmit(getValues(), null)
+  const onSave = async () => onSubmit(getValues(), null);
 
   const handleChangeCategories = (event: any) => {
-    setValue('categories_id', event.target.value)
-  }
+    setValue("categories_id", event.target.value);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -65,7 +73,7 @@ const GenresForm = () => {
       />
       <TextField
         select
-        value={watch('categories_id')}
+        value={watch("categories_id")}
         name="categories_id"
         label="Categorias"
         variant="outlined"
@@ -75,21 +83,25 @@ const GenresForm = () => {
         fullWidth
         onChange={handleChangeCategories}
         SelectProps={{
-          multiple: true
+          multiple: true,
         }}
       >
         <MenuItem value="">
           <em>Selecione uma Categoria</em>
         </MenuItem>
-        {
-          categories.map(
-            (category, key) => (<MenuItem key={key} value={category.id}>{category.name}</MenuItem>)
-          )
-        }
+        {categories.map((category, key) => (
+          <MenuItem key={key} value={category.id}>
+            {category.name}
+          </MenuItem>
+        ))}
       </TextField>
       <Box dir="rtl">
-        <Button {...buttonProps} onClick={onSave}>Salvar</Button>
-        <Button {...buttonProps} type="submit">Salvar e continuar editado</Button>
+        <Button {...buttonProps} onClick={onSave}>
+          Salvar
+        </Button>
+        <Button {...buttonProps} type="submit">
+          Salvar e continuar editado
+        </Button>
       </Box>
     </form>
   );

@@ -1,13 +1,14 @@
 interface BaseModel {
-  id: string,
-  created_at?: string,
-  updated_at?: string,
-  deleted_at?: string
+  id: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
 }
 
 export interface Category extends BaseModel {
-  name: string,
-  is_active: boolean
+  name: string;
+  description: string;
+  is_active: boolean;
 }
 
 export enum CastMemberTypesEnum {
@@ -16,12 +17,12 @@ export enum CastMemberTypesEnum {
 }
 
 export interface CastMember extends BaseModel {
-  name: string,
-  type: keyof typeof CastMemberTypesEnum
+  name: string;
+  type: keyof typeof CastMemberTypesEnum;
 }
 
 export interface Genre extends BaseModel {
-  name: string,
-  is_active: boolean,
-  categories: Category[]
+  name: string;
+  is_active: boolean;
+  categories: Category[];
 }

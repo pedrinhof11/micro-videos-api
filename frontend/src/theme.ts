@@ -1,17 +1,17 @@
-import {createMuiTheme} from "@material-ui/core";
+import { createMuiTheme } from "@material-ui/core";
 
 const palette = {
   primary: {
     main: "#79aec8",
-      contrastText: "#fff"
+    contrastText: "#fff",
   },
   secondary: {
     main: "#4db5ab",
-      contrastText: "#fff"
+    contrastText: "#fff",
   },
   background: {
-  default: "#fafafa"
-  }
+    default: "#fafafa",
+  },
 };
 
 const theme = createMuiTheme({
@@ -19,26 +19,26 @@ const theme = createMuiTheme({
   overrides: {
     MUIDataTable: {
       paper: {
-        boxShadow: "none"
-      }
+        boxShadow: "none",
+      },
     },
     MUIDataTableToolbar: {
       root: {
         minHeight: "58px",
-        backgroundColor: palette.background.default
+        backgroundColor: palette.background.default,
       },
       icon: {
         color: palette.primary.main,
-        '&:hover, &:active, &.focus': {
-          color: "#055a52"
-        }
+        "&:hover, &:active, &.focus": {
+          color: "#055a52",
+        },
       },
       iconActive: {
         color: "#055a52",
-        '&:hover, &:active, &.focus': {
-          color: "#055a52"
-        }
-      }
+        "&:hover, &:active, &.focus": {
+          color: "#055a52",
+        },
+      },
     },
     MUIDataTableHeadCell: {
       fixedHeader: {
@@ -47,58 +47,58 @@ const theme = createMuiTheme({
         backgroundColor: palette.primary.main,
         color: "#fff",
         "&[aria-sort]": {
-          backgroundColor: "#459ac4"
-        }
+          backgroundColor: "#459ac4",
+        },
       },
       sortActive: {
-        color: "#fff"
+        color: "#fff",
       },
       sortAction: {
-        alignItems: 'center'
+        alignItems: "center",
       },
       sortLabelRoot: {
         "& svg": {
-          color: "#fff !important"
-        }
-      }
+          color: "#fff !important",
+        },
+      },
     },
     MUIDataTableSelectCell: {
       headerCell: {
         backgroundColor: palette.primary.main,
         "& span": {
-          color: "#fff !important"
-        }
-      }
+          color: "#fff !important",
+        },
+      },
     },
     MUIDataTableBodyCell: {
       root: {
         color: palette.secondary.main,
-        '&:hover, &:active, &.focus': {
-          color: palette.secondary.main
-        }
-      }
+        "&:hover, &:active, &.focus": {
+          color: palette.secondary.main,
+        },
+      },
     },
     MUIDataTableToolbarSelect: {
       title: {
-        color: palette.primary.main
+        color: palette.primary.main,
       },
       iconButton: {
-        color: palette.primary.main
-      }
+        color: palette.primary.main,
+      },
     },
     MUIDataTableBodyRow: {
       root: {
         "&:nth-child(odd)": {
-          background: palette.background.default
-        }
-      }
+          background: palette.background.default,
+        },
+      },
     },
     MUIDataTablePagination: {
       root: {
-        color: palette.primary.main
-      }
-    }
-  }
+        color: palette.primary.main,
+      },
+    },
+  },
 });
 
 export default theme;
