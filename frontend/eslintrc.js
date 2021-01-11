@@ -27,7 +27,7 @@ module.exports = {
         project: './tsconfig.json',
     },
     rules: {
-        'linebreak-style': 'off',
+        // 'linebreak-style': 'off',
         'prettier/prettier': [
             'error',
             {

@@ -1,25 +1,26 @@
-import * as React from 'react';
-import Page from "../../components/Page";
-import {Box, Fab} from "@material-ui/core";
-import {Link} from "react-router-dom";
+import { Box, Fab } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+import * as React from "react";
+import { Link } from "react-router-dom";
+import Page from "../../components/Page";
 import CategoriesTable from "./CategoriesTable";
 
 const Categories = () => {
   return (
     <Page title="Listagem de Categorias">
-      <Box dir="rtl">
+      <Box dir="rtl" paddingBottom={2}>
         <Fab
           title="Adicionar Categoria"
           size="small"
+          color="secondary"
           component={Link}
           to="/categories/create"
         >
-          <AddIcon/>
+          <AddIcon />
         </Fab>
       </Box>
       <Box>
-        <CategoriesTable/>
+        <CategoriesTable />
       </Box>
     </Page>
   );
