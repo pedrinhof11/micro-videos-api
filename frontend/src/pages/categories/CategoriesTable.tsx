@@ -1,7 +1,8 @@
 import { Chip } from "@material-ui/core";
-import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
+import { MUIDataTableColumnDef } from "mui-datatables";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import BaseTable from "../../components/Table/BaseTable";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
 import { dateFormatFromIso, useIsMountedRef } from "../../utils";
@@ -45,9 +46,7 @@ const CategoriesTable = () => {
     })();
   }, [isMountedRef]);
 
-  return (
-    <MUIDataTable title="Categorias" columns={columns} data={categories} />
-  );
+  return <BaseTable title="Categorias" columns={columns} data={categories} />;
 };
 
 export default CategoriesTable;
