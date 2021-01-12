@@ -1,6 +1,6 @@
 import { IconButton, Menu as MuiMenu, MenuItem } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
-import React, { ReactElement } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import routes, { appRouteProps } from "../../routes";
 
@@ -14,12 +14,11 @@ const menuRoutes = routes.filter((route) =>
   Object.keys(listRoutes).includes(route.name)
 );
 
-const Menu = (): ReactElement => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+const Menu = () => {
+  const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleOpen = (event: any) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
   return (
     <React.Fragment>
       <IconButton

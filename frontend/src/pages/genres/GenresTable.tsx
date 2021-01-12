@@ -3,7 +3,7 @@ import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
 import React, { useEffect, useState } from "react";
 import GenreResource from "../../http/GenreResource";
 import { Category, Genre } from "../../types/models";
-import { dateFormatFromIso } from "../../utils";
+import { dateFormatFromIso, useIsMountedRef } from "../../utils";
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -44,17 +44,18 @@ const columns: MUIDataTableColumnDef[] = [
 
 const GenresTable = () => {
   const [genres, setGenres] = useState<Genre[]>([]);
-
-  const fetchData = async () => {
-    const {
-      data: { data },
-    } = await GenreResource.list();
-    setGenres(data);
-  };
+  const isMountedRef = useIsMountedRef();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    (async () => {
+      const {
+        data: { data },
+      } = await GenreResource.list();
+      if (isMountedRef.current) {
+        setGenres(data);
+      }
+    })();
+  }, [isMountedRef]);
 
   return <MUIDataTable title="Gêneros" columns={columns} data={genres} />;
 };

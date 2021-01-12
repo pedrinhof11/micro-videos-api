@@ -1,10 +1,10 @@
+import { Chip } from "@material-ui/core";
+import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
-import { Chip } from "@material-ui/core";
-import { dateFormatFromIso } from "../../utils";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
+import { dateFormatFromIso, useIsMountedRef } from "../../utils";
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -34,12 +34,16 @@ const columns: MUIDataTableColumnDef[] = [
 
 const CategoriesTable = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const isMountedRef = useIsMountedRef();
 
   useEffect(() => {
-    CategoryResource.list().then(({ data: { data } }) => {
-      setCategories(data);
-    });
-  }, []);
+    (async () => {
+      const { data } = await CategoryResource.list();
+      if (isMountedRef.current) {
+        setCategories(data.data);
+      }
+    })();
+  }, [isMountedRef]);
 
   return (
     <MUIDataTable title="Categorias" columns={columns} data={categories} />

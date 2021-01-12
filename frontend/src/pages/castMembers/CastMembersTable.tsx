@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
 import MUIDataTable, { MUIDataTableColumnDef } from "mui-datatables";
+import React, { useEffect, useState } from "react";
 import { httpVideo } from "../../http";
-import { dateFormatFromIso } from "../../utils";
 import { CastMemberTypesEnum } from "../../types/models.d";
+import { dateFormatFromIso, useIsMountedRef } from "../../utils";
 
 const columns: MUIDataTableColumnDef[] = [
   { name: "name", label: "Nome" },
@@ -26,17 +26,16 @@ const columns: MUIDataTableColumnDef[] = [
 
 const CastMembersTable = () => {
   const [castMembers, setCastMembers] = useState([]);
-
-  const fetchData = async () => {
-    const {
-      data: { data },
-    } = await httpVideo.get("cast-members");
-    setCastMembers(data);
-  };
+  const isMountedRef = useIsMountedRef();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    (async () => {
+      const { data } = await httpVideo.get("cast-members");
+      if (isMountedRef.current) {
+        setCastMembers(data.data);
+      }
+    })();
+  }, [isMountedRef]);
 
   return (
     <MUIDataTable

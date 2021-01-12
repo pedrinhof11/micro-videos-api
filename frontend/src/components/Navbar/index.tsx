@@ -1,12 +1,12 @@
-import * as React from "react";
 import {
   AppBar,
-  Toolbar,
-  Typography,
   Button,
   makeStyles,
   Theme,
+  Toolbar,
+  Typography,
 } from "@material-ui/core";
+import React, { useRef } from "react";
 import logo from "../../static/img/logo.png";
 import Menu from "./Menu";
 
@@ -26,13 +26,14 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export const Navbar: React.FC = () => {
+const Navbar = () => {
+  const nodeRef = useRef(null);
   const classes = useStyles();
 
   return (
-    <AppBar>
+    <AppBar ref={nodeRef}>
       <Toolbar className={classes.toolbar}>
-        <Menu></Menu>
+        <Menu />
         <Typography className={classes.title}>
           <img src={logo} alt="CodeFlix" className={classes.logo} />
         </Typography>
@@ -41,3 +42,4 @@ export const Navbar: React.FC = () => {
     </AppBar>
   );
 };
+export default Navbar;
