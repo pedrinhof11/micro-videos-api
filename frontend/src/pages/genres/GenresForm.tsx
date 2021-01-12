@@ -1,28 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  Box,
-  Button,
-  ButtonProps,
-  makeStyles,
-  MenuItem,
-  TextField,
-  Theme,
-} from "@material-ui/core";
+import { MenuItem, TextField } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
+import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import GenreResource from "../../http/GenreResource";
 import { Category, Genre } from "../../types/models";
 import { useIsMountedRef } from "../../utils";
 import { yup } from "../../utils/yup";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  submit: {
-    margin: theme.spacing(1),
-  },
-}));
 
 const validationSchema = yup.object().shape({
   name: yup.string().label("nome").required(),
@@ -38,24 +25,18 @@ const GenresForm = () => {
     watch,
     errors,
     reset,
+    trigger,
   } = useForm({
     resolver: yupResolver(validationSchema),
   });
 
   const isMountedRef = useIsMountedRef();
-  const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
   const [genre, setGenre] = useState<Genre | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-  };
 
   useEffect(() => {
     register({ name: "categories_id" });
@@ -129,7 +110,12 @@ const GenresForm = () => {
     }
   };
 
-  const onSave = async () => onSubmit(getValues());
+  const onSave = async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      onSubmit(getValues());
+    }
+  };
 
   const handleChangeCategories = (event: React.BaseSyntheticEvent) => {
     setValue("categories_id", event.target.value);
@@ -178,14 +164,7 @@ const GenresForm = () => {
           </MenuItem>
         ))}
       </TextField>
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={onSave}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e continuar editado
-        </Button>
-      </Box>
+      <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
     </form>
   );
 };

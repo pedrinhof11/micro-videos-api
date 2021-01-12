@@ -1,28 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  Box,
-  Button,
-  ButtonProps,
-  Checkbox,
-  FormControlLabel,
-  makeStyles,
-  TextField,
-  Theme,
-} from "@material-ui/core";
+import { Checkbox, FormControlLabel, TextField } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
+import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
 import { useIsMountedRef } from "../../utils";
 import { yup } from "../../utils/yup";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  submit: {
-    margin: theme.spacing(1),
-  },
-}));
 
 const categoryValidation = yup.object().shape({
   name: yup.string().label("nome").required(),
@@ -30,26 +16,24 @@ const categoryValidation = yup.object().shape({
 });
 
 const CategoriesForm = () => {
-  const { register, handleSubmit, getValues, errors, reset, control } = useForm(
-    {
-      resolver: yupResolver(categoryValidation),
-    }
-  );
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    errors,
+    reset,
+    control,
+    trigger,
+  } = useForm({
+    resolver: yupResolver(categoryValidation),
+  });
 
   const isMountedRef = useIsMountedRef();
-  const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
   const [category, setCategory] = useState<Category | null>(null);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-    disabled: loading,
-  };
 
   useEffect(() => {
     register({ name: "is_active" });
@@ -107,7 +91,12 @@ const CategoriesForm = () => {
     }
   };
 
-  const onSave = async () => onSubmit(getValues());
+  const onSave = async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      onSubmit(getValues());
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -159,15 +148,7 @@ const CategoriesForm = () => {
           );
         }}
       />
-
-      <Box dir="rtl">
-        <Button color="primary" {...buttonProps} onClick={onSave}>
-          Salvar
-        </Button>
-        <Button color="primary" {...buttonProps} type="submit">
-          Salvar e continuar editado
-        </Button>
-      </Box>
+      <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
     </form>
   );
 };
