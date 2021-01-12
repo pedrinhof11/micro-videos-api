@@ -1,8 +1,8 @@
 interface BaseModel {
-  id: string;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string;
+  readonly id: string;
+  readonly created_at?: string;
+  readonly updated_at?: string;
+  readonly deleted_at?: string | null;
 }
 
 export interface Category extends BaseModel {
