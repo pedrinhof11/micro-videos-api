@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
 import CastMemberResource from "../../http/CastMemberResource";
 import { CastMember } from "../../types/models";
+import { useIsMountedRef } from "../../utils";
 import { yup } from "../../utils/yup";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -45,6 +46,7 @@ const CastMembersForm = () => {
     resolver: yupResolver(castMembersValidation),
   });
 
+  const isMountedRef = useIsMountedRef();
   const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
@@ -68,14 +70,16 @@ const CastMembersForm = () => {
       return;
     }
 
-    async function getCastMembers() {
+    (async () => {
       setLoading(true);
       try {
         const {
           data: { data },
         } = await CastMemberResource.get(id);
-        setCastMember(data);
-        reset(data as any);
+        if (isMountedRef) {
+          setCastMember(data);
+          reset(data as any);
+        }
       } catch (error) {
         snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
@@ -83,10 +87,8 @@ const CastMembersForm = () => {
       } finally {
         setLoading(false);
       }
-    }
-
-    getCastMembers();
-  }, [id, reset, snackbar]);
+    })();
+  }, [id, reset, snackbar, isMountedRef]);
 
   const onSubmit = async (formData: any, event?: React.BaseSyntheticEvent) => {
     setLoading(true);

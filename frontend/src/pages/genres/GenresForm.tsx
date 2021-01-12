@@ -15,6 +15,7 @@ import { useHistory, useParams } from "react-router-dom";
 import CategoryResource from "../../http/CategoryResource";
 import GenreResource from "../../http/GenreResource";
 import { Category, Genre } from "../../types/models";
+import { useIsMountedRef } from "../../utils";
 import { yup } from "../../utils/yup";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -41,6 +42,7 @@ const GenresForm = () => {
     resolver: yupResolver(validationSchema),
   });
 
+  const isMountedRef = useIsMountedRef();
   const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
@@ -60,25 +62,29 @@ const GenresForm = () => {
   }, [register]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      const {
-        data: { data },
-      } = await CategoryResource.list();
-      setCategories(data);
-    };
-    const getGenre = async () => {
+    async function getGenre() {
       const {
         data: { data },
       } = await GenreResource.get(id);
+      if (isMountedRef.current) {
+        setGenre(data);
+        reset({
+          ...data,
+          categories_id: data.categories.map((category: any) => category.id),
+        } as any);
+      }
+    }
 
-      setGenre(data);
+    async function fetchCategories() {
+      const {
+        data: { data },
+      } = await CategoryResource.list();
+      if (isMountedRef.current) {
+        setCategories(data);
+      }
+    }
 
-      reset({
-        ...data,
-        categories_id: data.categories.map((category: any) => category.id),
-      });
-    };
-    async function loadData() {
+    (async () => {
       setLoading(true);
       const promisses = [fetchCategories()];
       if (id) {
@@ -93,9 +99,8 @@ const GenresForm = () => {
       } finally {
         setLoading(false);
       }
-    }
-    loadData();
-  }, [id, reset, snackbar]);
+    })();
+  }, [id, reset, snackbar, isMountedRef]);
 
   const onSubmit = async (formData: any, event?: React.BaseSyntheticEvent) => {
     setLoading(true);

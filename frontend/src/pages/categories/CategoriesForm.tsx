@@ -15,6 +15,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
+import { useIsMountedRef } from "../../utils";
 import { yup } from "../../utils/yup";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -29,18 +30,19 @@ const categoryValidation = yup.object().shape({
 });
 
 const CategoriesForm = () => {
+  const { register, handleSubmit, getValues, errors, reset, control } = useForm(
+    {
+      resolver: yupResolver(categoryValidation),
+    }
+  );
+
+  const isMountedRef = useIsMountedRef();
   const classes = useStyles();
   const history = useHistory();
   const snackbar = useSnackbar();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
   const [category, setCategory] = useState<Category | null>(null);
-
-  const { register, handleSubmit, getValues, errors, reset, control } = useForm(
-    {
-      resolver: yupResolver(categoryValidation),
-    }
-  );
 
   const buttonProps: ButtonProps = {
     className: classes.submit,
@@ -58,14 +60,16 @@ const CategoriesForm = () => {
       return;
     }
 
-    async function getCategory() {
+    (async () => {
       setLoading(true);
       try {
         const {
           data: { data },
         } = await CategoryResource.get(id);
-        setCategory(data);
-        reset(data as any);
+        if (isMountedRef) {
+          setCategory(data);
+          reset(data as any);
+        }
       } catch (error) {
         snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
@@ -73,10 +77,8 @@ const CategoriesForm = () => {
       } finally {
         setLoading(false);
       }
-    }
-
-    getCategory();
-  }, [id, reset, snackbar]);
+    })();
+  }, [id, reset, snackbar, isMountedRef]);
 
   const onSubmit = async (formData: any, event?: React.BaseSyntheticEvent) => {
     setLoading(true);
