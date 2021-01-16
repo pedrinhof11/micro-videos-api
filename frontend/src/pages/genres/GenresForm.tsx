@@ -60,7 +60,7 @@ const GenresForm = () => {
     async function fetchCategories() {
       const {
         data: { data },
-      } = await CategoryResource.list();
+      } = await CategoryResource.list({ all: true });
       if (isMountedRef.current) {
         setCategories(data);
       }

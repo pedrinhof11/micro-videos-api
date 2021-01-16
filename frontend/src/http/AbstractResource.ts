@@ -22,8 +22,8 @@ export interface httpResponse<T> {
 export default class AbstractResource<C = any> {
   constructor(protected http: AxiosInstance, protected resource: string) {}
 
-  list<T = httpResponse<C[]>>(): Promise<AxiosResponse<T>> {
-    return this.http.get<T>(this.resource);
+  list<T = httpResponse<C[]>>(params: {} = {}): Promise<AxiosResponse<T>> {
+    return this.http.get<T>(this.resource, { params });
   }
   get<T = httpResponse<C>>(id: any): Promise<AxiosResponse<T>> {
     return this.http.get<T>(`${this.resource}/${id}`);

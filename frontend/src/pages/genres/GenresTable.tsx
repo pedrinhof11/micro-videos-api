@@ -57,10 +57,10 @@ const columns: TableColumn[] = [
       customBodyRender: (value, tableMeta) => {
         return (
           <IconButton
-            title="editar Genero"
+            title="editar Gênero"
             color="secondary"
             component={Link}
-            to={`/categories/${tableMeta.rowData[0]}/edit`}
+            to={`/genres/${tableMeta.rowData[0]}/edit`}
           >
             <EditIcon fontSize="inherit" />
           </IconButton>
