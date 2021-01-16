@@ -112,4 +112,18 @@ const BaseTable: React.FC<TableProps> = (props) => {
   );
 };
 
+export function makeActionThemes(column: number) {
+  return (theme: Theme) => {
+    const copyTheme = cloneDeep(theme);
+    const selector = `&[data-colindex="${column}"]`;
+    if (copyTheme.overrides) {
+      (copyTheme.overrides as any).MUIDataTableBodyCell.root[selector] = {
+        paddingTop: "0px",
+        paddingBottom: "0px",
+      };
+    }
+    return copyTheme;
+  };
+}
+
 export default BaseTable;

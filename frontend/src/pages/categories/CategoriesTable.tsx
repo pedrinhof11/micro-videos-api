@@ -1,8 +1,13 @@
-import { Chip } from "@material-ui/core";
+import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
+import EditIcon from "@material-ui/icons/Edit";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import BaseTable, { TableColumn } from "../../components/Table/BaseTable";
+import { Link } from "react-router-dom";
+import BaseTable, {
+  makeActionThemes,
+  TableColumn,
+} from "../../components/Table/BaseTable";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
 import { dateFormatFromIso, useIsMountedRef } from "../../utils";
@@ -36,8 +41,22 @@ const columns: TableColumn[] = [
   },
   {
     name: "actions",
-    label: " ",
+    label: "Ações",
     width: "13%",
+    options: {
+      customBodyRender: (value, tableMeta) => {
+        return (
+          <IconButton
+            title="editar Categoria"
+            color="secondary"
+            component={Link}
+            to={`/categories/${tableMeta.rowData[0]}/edit`}
+          >
+            <EditIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+    },
   },
 ];
 
@@ -66,12 +85,14 @@ const CategoriesTable = () => {
   }, [isMountedRef, snackbar]);
 
   return (
-    <BaseTable
-      title="Categorias"
-      columns={columns}
-      data={categories}
-      loading={loading}
-    />
+    <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
+      <BaseTable
+        title="Categorias"
+        columns={columns}
+        data={categories}
+        loading={loading}
+      />
+    </MuiThemeProvider>
   );
 };
 

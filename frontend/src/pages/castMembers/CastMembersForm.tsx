@@ -12,6 +12,7 @@ import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
+import BaseForm from "../../components/Forms/BaseForm";
 import SubmitActions from "../../components/Forms/SubmitActions";
 import CastMemberResource from "../../http/CastMemberResource";
 import { CastMember } from "../../types/models";
@@ -113,7 +114,10 @@ const CastMembersForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <BaseForm
+      GridItemProps={{ xs: 12, md: 6 }}
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <TextField
         inputRef={register}
         error={errors.name !== undefined}
@@ -148,7 +152,7 @@ const CastMembersForm = () => {
       </FormControl>
 
       <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
-    </form>
+    </BaseForm>
   );
 };
 

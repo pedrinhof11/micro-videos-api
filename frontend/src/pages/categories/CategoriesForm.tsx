@@ -4,6 +4,7 @@ import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
+import BaseForm from "../../components/Forms/BaseForm";
 import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
@@ -99,7 +100,10 @@ const CategoriesForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <BaseForm
+      GridItemProps={{ xs: 12, md: 6 }}
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <TextField
         inputRef={register}
         error={errors.name !== undefined}
@@ -149,7 +153,7 @@ const CategoriesForm = () => {
         }}
       />
       <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
-    </form>
+    </BaseForm>
   );
 };
 

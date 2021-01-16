@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
-import DefaultForm from "../../components/Forms/DefaultForm";
+import BaseForm from "../../components/Forms/BaseForm";
 import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import GenreResource from "../../http/GenreResource";
@@ -123,7 +123,7 @@ const GenresForm = () => {
   };
 
   return (
-    <DefaultForm
+    <BaseForm
       GridItemProps={{ xs: 12, md: 6 }}
       onSubmit={handleSubmit(onSubmit)}
     >
@@ -169,7 +169,7 @@ const GenresForm = () => {
         ))}
       </TextField>
       <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
-    </DefaultForm>
+    </BaseForm>
   );
 };
 

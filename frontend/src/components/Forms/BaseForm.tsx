@@ -7,7 +7,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-interface DefaultFormProps
+interface BaseFormProps
   extends React.DetailedHTMLProps<
     React.FormHTMLAttributes<HTMLFormElement>,
     HTMLFormElement
@@ -15,7 +15,7 @@ interface DefaultFormProps
   GridContainerProps?: GridProps;
   GridItemProps?: GridProps;
 }
-const DefaultForm: React.FC<DefaultFormProps> = ({
+const BaseForm: React.FC<BaseFormProps> = ({
   GridContainerProps,
   GridItemProps,
   ...props
@@ -32,4 +32,4 @@ const DefaultForm: React.FC<DefaultFormProps> = ({
   );
 };
 
-export default DefaultForm;
+export default BaseForm;
