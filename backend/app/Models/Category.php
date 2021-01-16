@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Models\Traits\SerializeDateTrait;
 use App\Models\Traits\UuidTrait;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use SoftDeletes, UuidTrait, SerializeDateTrait;
+    use SoftDeletes, UuidTrait, SerializeDateTrait, Filterable;
 
     protected $keyType = "string";
 
@@ -24,4 +25,6 @@ class Category extends Model
     protected $casts = [
         'is_active' => 'boolean'
     ];
+
+
 }
