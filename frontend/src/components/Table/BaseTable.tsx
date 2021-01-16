@@ -1,5 +1,14 @@
+import {
+  MuiThemeProvider,
+  Theme,
+  useMediaQuery,
+  useTheme,
+} from "@material-ui/core";
+import cloneDeep from "lodash/cloneDeep";
 import merge from "lodash/merge";
+import omit from "lodash/omit";
 import MUIDataTable, {
+  MUIDataTableColumn,
   MUIDataTableOptions,
   MUIDataTableProps,
 } from "mui-datatables";
@@ -42,10 +51,65 @@ const defaultOptions: MUIDataTableOptions = {
     },
   },
 };
-interface TableProps extends MUIDataTableProps {}
+export interface TableColumn extends MUIDataTableColumn {
+  width?: string;
+}
+interface TableProps extends MUIDataTableProps {
+  columns: TableColumn[];
+  loading?: boolean;
+}
 const BaseTable: React.FC<TableProps> = (props) => {
-  const mergedProps = merge({ options: defaultOptions }, props);
-  return <MUIDataTable {...mergedProps}></MUIDataTable>;
+  const theme = cloneDeep<Theme>(useTheme());
+  const isSmOrDown = useMediaQuery(theme.breakpoints.down("sm"));
+
+  function extractMuiDataTableColumns(
+    columns: TableColumn[]
+  ): MUIDataTableColumn[] {
+    setColumnsWidth(columns);
+    return columns.map((column) => omit(column, "width"));
+  }
+
+  function setColumnsWidth(columns: TableColumn[]) {
+    columns.forEach((column, key) => {
+      if (column.width) {
+        const overrides = theme.overrides as any;
+        overrides.MUIDataTableHeadCell.fixedHeader[
+          `&:nth-child(${key + 2})`
+        ] = {
+          width: column.width,
+        };
+      }
+    });
+  }
+
+  function applyLoading() {
+    mergedProps.options!.textLabels!.body!.noMatch = mergedProps.loading
+      ? "Carregando..."
+      : mergedProps.options!.textLabels!.body!.noMatch;
+  }
+
+  function applyResponsiveMode() {
+    mergedProps.options.responsive = isSmOrDown ? "standard" : "vertical";
+  }
+
+  function getOriginalProps() {
+    return omit(mergedProps, "loading");
+  }
+
+  const mergedProps = merge({ options: cloneDeep(defaultOptions) }, props, {
+    columns: extractMuiDataTableColumns(props.columns),
+  });
+
+  applyLoading();
+  applyResponsiveMode();
+
+  const originalProps = getOriginalProps();
+
+  return (
+    <MuiThemeProvider theme={theme}>
+      <MUIDataTable {...originalProps}></MUIDataTable>
+    </MuiThemeProvider>
+  );
 };
 
 export default BaseTable;
