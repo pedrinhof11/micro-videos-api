@@ -1,5 +1,4 @@
-import { AxiosInstance, AxiosResponse } from "axios";
-
+import axios, { AxiosInstance, AxiosResponse, CancelTokenSource } from "axios";
 export interface httpResponse<T> {
   data: T;
   links?: {
@@ -18,12 +17,20 @@ export interface httpResponse<T> {
     total: number;
   };
 }
-
 export default class AbstractResource<C = any> {
+  private cancelList: CancelTokenSource | null = null;
+
   constructor(protected http: AxiosInstance, protected resource: string) {}
 
   list<T = httpResponse<C[]>>(params: {} = {}): Promise<AxiosResponse<T>> {
-    return this.http.get<T>(this.resource, { params });
+    if (this.cancelList) {
+      this.cancelList.cancel("List request cancelled");
+    }
+    this.cancelList = axios.CancelToken.source();
+    return this.http.get<T>(this.resource, {
+      cancelToken: this.cancelList.token,
+      params,
+    });
   }
   get<T = httpResponse<C>>(id: any): Promise<AxiosResponse<T>> {
     return this.http.get<T>(`${this.resource}/${id}`);
@@ -36,5 +43,9 @@ export default class AbstractResource<C = any> {
   }
   delete<T = httpResponse<C>>(id: any): Promise<AxiosResponse<T>> {
     return this.http.delete(`${this.resource}/${id}`);
+  }
+
+  isCancel(error: any) {
+    return axios.isCancel(error);
   }
 }

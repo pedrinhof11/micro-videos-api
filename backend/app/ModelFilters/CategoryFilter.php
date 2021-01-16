@@ -2,20 +2,13 @@
 
 namespace App\ModelFilters;
 
-use EloquentFilter\ModelFilter;
 
-class CategoryFilter extends ModelFilter
+class CategoryFilter extends AbstractFilter
 {
-    /**
-    * Related Models that have ModelFilters as well as the method on the ModelFilter
-    * As [relationMethod => [input_key1, input_key2]].
-    *
-    * @var array
-    */
-    public $relations = [];
+    protected array $sortable = ['name', 'is_active', 'created_at'];
 
     public function search($name)
     {
-        return $this->query->where('name', 'LIKE', "%$name%");
+        return $this->where('name', 'LIKE', "%$name%");
     }
 }

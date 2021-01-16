@@ -1,8 +1,7 @@
 import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import { useSnackbar } from "notistack";
-import * as React from "react";
-import { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BaseTable, {
   makeActionThemes,
@@ -11,6 +10,21 @@ import BaseTable, {
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
 import { dateFormatFromIso, useIsMountedRef } from "../../utils";
+
+interface Pagination {
+  page: number;
+  perPage: number;
+}
+
+interface Order {
+  sort?: string | null;
+  dir?: string | null;
+}
+interface Search {
+  search: string;
+}
+
+interface RequestParams extends Search, Pagination, Order {}
 
 const columns: TableColumn[] = [
   { name: "id", label: "ID", options: { sort: false }, width: "33%" },
@@ -65,24 +79,66 @@ const CategoriesTable = () => {
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [total, setTotal] = useState<number>(0);
+  const [requestParams, setRequestParams] = useState<RequestParams>({
+    search: "",
+    page: 1,
+    perPage: 10,
+  });
+
+  const handleSearchChange = (value: string | null): void => {
+    setRequestParams((prevState) => ({
+      ...prevState,
+      search: value ?? "",
+      page: 1,
+    }));
+  };
+
+  const handleChangePage = (currentPage: number) => {
+    setRequestParams((prevState) => ({
+      ...prevState,
+      page: currentPage + 1,
+    }));
+  };
+
+  const handleChangeRowsPerPage = (perPage: number) => {
+    setRequestParams((prevState) => ({
+      ...prevState,
+      perPage: perPage,
+    }));
+  };
+
+  const handleColumnSortChange = (column: string, dir: "asc" | "desc") => {
+    setRequestParams((prevState) => ({
+      ...prevState,
+      sort: column,
+      dir,
+    }));
+  };
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await CategoryResource.list({ ...requestParams });
+      if (isMountedRef.current) {
+        setCategories(data.data);
+        setTotal(data.meta!.total);
+      }
+    } catch (error) {
+      if (CategoryResource.isCancel(error)) {
+        return;
+      }
+      snackbar.enqueueSnackbar("Não possivel carregar as informações", {
+        variant: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [requestParams, isMountedRef, snackbar]);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const { data } = await CategoryResource.list();
-        if (isMountedRef.current) {
-          setCategories(data.data);
-        }
-      } catch (error) {
-        snackbar.enqueueSnackbar("Não possivel carregar as informações", {
-          variant: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [isMountedRef, snackbar]);
+    fetchData();
+  }, [fetchData]);
 
   return (
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
@@ -91,6 +147,17 @@ const CategoriesTable = () => {
         columns={columns}
         data={categories}
         loading={loading}
+        options={{
+          serverSide: true,
+          searchText: requestParams.search,
+          page: requestParams.page - 1,
+          rowsPerPage: requestParams.perPage,
+          count: total,
+          onSearchChange: handleSearchChange,
+          onChangePage: handleChangePage,
+          onChangeRowsPerPage: handleChangeRowsPerPage,
+          onColumnSortChange: handleColumnSortChange,
+        }}
       />
     </MuiThemeProvider>
   );
