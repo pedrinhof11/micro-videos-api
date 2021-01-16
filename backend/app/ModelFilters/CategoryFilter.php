@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\ModelFilters;
 
@@ -13,4 +13,9 @@ class CategoryFilter extends ModelFilter
     * @var array
     */
     public $relations = [];
+
+    public function search($name)
+    {
+        return $this->query->where('name', 'LIKE', "%$name%");
+    }
 }

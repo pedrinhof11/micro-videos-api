@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\ModelFilters\CategoryFilter;
 use App\Models\Traits\SerializeDateTrait;
 use App\Models\Traits\UuidTrait;
 use EloquentFilter\Filterable;
@@ -26,5 +27,8 @@ class Category extends Model
         'is_active' => 'boolean'
     ];
 
-
+    public function modelFilter()
+    {
+        return $this->provideFilter(CategoryFilter::class);
+    }
 }
