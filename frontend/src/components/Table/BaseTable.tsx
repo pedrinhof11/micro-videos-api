@@ -13,7 +13,9 @@ import MUIDataTable, {
   MUIDataTableProps,
 } from "mui-datatables";
 import React from "react";
-const defaultOptions: MUIDataTableOptions = {
+import BaseTableSearch from "./BaseTableSearch.jsx"
+
+const makeDefaultOptions = (debounceSearch: number) : MUIDataTableOptions => ({
   print: false,
   download: false,
   textLabels: {
@@ -50,13 +52,28 @@ const defaultOptions: MUIDataTableOptions = {
       deleteAria: "Excluir linha selecionada",
     },
   },
-};
+  customSearchRender: (
+    searchText: string,
+    handleSearch: (text: string) => void,
+    hideSearch: () => void,
+    options: any,
+  ) => {
+    return <BaseTableSearch 
+    searchText={searchText}
+    onSearch={handleSearch}
+    onHide={hideSearch}
+    options={options}
+    debounceSearch={debounceSearch}
+    />
+  }
+});
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
 }
 interface TableProps extends MUIDataTableProps {
   columns: TableColumn[];
   loading?: boolean;
+  debounceSearch?: number;
 }
 const BaseTable: React.FC<TableProps> = (props) => {
   const theme = cloneDeep<Theme>(useTheme());
@@ -96,6 +113,7 @@ const BaseTable: React.FC<TableProps> = (props) => {
     return omit(mergedProps, "loading");
   }
 
+  const defaultOptions = makeDefaultOptions(props.debounceSearch ?? 0)
   const mergedProps = merge({ options: cloneDeep(defaultOptions) }, props, {
     columns: extractMuiDataTableColumns(props.columns),
   });

@@ -1,5 +1,6 @@
 import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import { MUIDataTableOptions } from "mui-datatables";
 import { useSnackbar } from "notistack";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,10 +8,10 @@ import BaseTable, {
   makeActionThemes,
   TableColumn,
 } from "../../components/Table/BaseTable";
+import ResetFilterButton from "../../components/Table/ResetFilterButton";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
 import { dateFormatFromIso, useIsMountedRef } from "../../utils";
-
 interface Pagination {
   page: number;
   perPage: number;
@@ -28,7 +29,12 @@ interface RequestParams extends Search, Pagination, Order {}
 
 const columns: TableColumn[] = [
   { name: "id", label: "ID", options: { sort: false }, width: "33%" },
-  { name: "name", label: "Nome", width: "40%" },
+  {
+    name: "name",
+    label: "Nome",
+    width: "40%",
+    options: { sort: true, sortThirdClickReset: true },
+  },
   {
     name: "is_active",
     label: "Ativo?",
@@ -75,16 +81,21 @@ const columns: TableColumn[] = [
 ];
 
 const CategoriesTable = () => {
+  const initialState = {
+    search: "",
+    page: 1,
+    perPage: 10,
+    sort: null,
+    dir: null,
+  };
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
-  const [requestParams, setRequestParams] = useState<RequestParams>({
-    search: "",
-    page: 1,
-    perPage: 10,
-  });
+  const [requestParams, setRequestParams] = useState<RequestParams>(
+    initialState
+  );
 
   const handleSearchChange = (value: string | null): void => {
     setRequestParams((prevState) => ({
@@ -116,10 +127,38 @@ const CategoriesTable = () => {
     }));
   };
 
+  const options: MUIDataTableOptions = {
+    serverSide: true,
+    searchText: requestParams.search as string,
+    page: requestParams.page - 1,
+    rowsPerPage: requestParams.perPage,
+    count: total,
+    customToolbar: () => (
+      <ResetFilterButton
+        onClick={() => {
+          setRequestParams({
+            ...initialState,
+            search: {
+              value: initialState.search
+            } as any
+          });
+        }}
+      ></ResetFilterButton>
+    ),
+    onSearchChange: handleSearchChange,
+    onChangePage: handleChangePage,
+    onChangeRowsPerPage: handleChangeRowsPerPage,
+    onColumnSortChange: handleColumnSortChange,
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await CategoryResource.list({ ...requestParams });
+      const { search, ...params } = requestParams as any
+      const { data } = await CategoryResource.list({ 
+        ...params, 
+        search: search?.value !== undefined ? search.value : search 
+      });
       if (isMountedRef.current) {
         setCategories(data.data);
         setTotal(data.meta!.total);
@@ -143,21 +182,12 @@ const CategoriesTable = () => {
   return (
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
       <BaseTable
-        title="Categorias"
+        title=""
         columns={columns}
         data={categories}
         loading={loading}
-        options={{
-          serverSide: true,
-          searchText: requestParams.search,
-          page: requestParams.page - 1,
-          rowsPerPage: requestParams.perPage,
-          count: total,
-          onSearchChange: handleSearchChange,
-          onChangePage: handleChangePage,
-          onChangeRowsPerPage: handleChangeRowsPerPage,
-          onColumnSortChange: handleColumnSortChange,
-        }}
+        options={options}
+        debounceSearch={500}
       />
     </MuiThemeProvider>
   );
