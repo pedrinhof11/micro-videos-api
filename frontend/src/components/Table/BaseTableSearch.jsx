@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Grow from '@material-ui/core/Grow';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
@@ -37,11 +37,18 @@ const BaseTableSearch = ({ options, searchText, onSearch, onHide, debounceSearch
   // eslint-disable-next-line
   const debouncedOnSearch = useCallback(debounce((value) => onSearch(value), debounceSearch), []) 
 
+  useEffect(() => {
+    if(searchText?.value !== undefined) {
+      const value = searchText.value;
+      setText(value);
+      onSearch(value)
+    }
+  }, [searchText, onSearch]);
 
   const handleTextChange = event => {
     const value = event.target.value;
     setText(value);
-    debouncedOnSearch(value);
+    debouncedOnSearch(value)
   };
 
   const onKeyDown = event => {
@@ -50,10 +57,6 @@ const BaseTableSearch = ({ options, searchText, onSearch, onHide, debounceSearch
     }
   };
   
-  let value = text
-  if(searchText?.value !== undefined ) {
-    value = searchText.value
-  }
   return (
     <Grow appear in={true} timeout={300}>
       <div className={classes.main}>
@@ -65,7 +68,7 @@ const BaseTableSearch = ({ options, searchText, onSearch, onHide, debounceSearch
             'data-test-id': options.textLabels.toolbar.search,
             'aria-label': options.textLabels.toolbar.search,
           }}
-          value={value || ''}
+          value={text || ''}
           onKeyDown={onKeyDown}
           onChange={handleTextChange}
           fullWidth={true}

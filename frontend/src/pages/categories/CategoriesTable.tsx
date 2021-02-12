@@ -2,7 +2,7 @@ import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import { MUIDataTableOptions } from "mui-datatables";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import BaseTable, {
   makeActionThemes,
@@ -10,22 +10,9 @@ import BaseTable, {
 } from "../../components/Table/BaseTable";
 import ResetFilterButton from "../../components/Table/ResetFilterButton";
 import CategoryResource from "../../http/CategoryResource";
+import reducer, { INITIAL_STATE, Creators } from "../../store/search";
 import { Category } from "../../types/models";
 import { dateFormatFromIso, useIsMountedRef } from "../../utils";
-interface Pagination {
-  page: number;
-  perPage: number;
-}
-
-interface Order {
-  sort?: string | null;
-  dir?: string | null;
-}
-interface Search {
-  search: string;
-}
-
-interface RequestParams extends Search, Pagination, Order {}
 
 const columns: TableColumn[] = [
   { name: "id", label: "ID", options: { sort: false }, width: "33%" },
@@ -81,74 +68,28 @@ const columns: TableColumn[] = [
 ];
 
 const CategoriesTable = () => {
-  const initialState = {
-    search: "",
-    page: 1,
-    perPage: 10,
-    sort: null,
-    dir: null,
-  };
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
-  const [requestParams, setRequestParams] = useState<RequestParams>(
-    initialState
-  );
-
-  const handleSearchChange = (value: string | null): void => {
-    setRequestParams((prevState) => ({
-      ...prevState,
-      search: value ?? "",
-      page: 1,
-    }));
-  };
-
-  const handleChangePage = (currentPage: number) => {
-    setRequestParams((prevState) => ({
-      ...prevState,
-      page: currentPage + 1,
-    }));
-  };
-
-  const handleChangeRowsPerPage = (perPage: number) => {
-    setRequestParams((prevState) => ({
-      ...prevState,
-      perPage: perPage,
-    }));
-  };
-
-  const handleColumnSortChange = (column: string, dir: "asc" | "desc") => {
-    setRequestParams((prevState) => ({
-      ...prevState,
-      sort: column,
-      dir,
-    }));
-  };
+  const [requestParams, dispatch] = useReducer(reducer, INITIAL_STATE);
 
   const options: MUIDataTableOptions = {
     serverSide: true,
-    searchText: requestParams.search as string,
+    searchText: requestParams.search as any,
     page: requestParams.page - 1,
     rowsPerPage: requestParams.perPage,
     count: total,
     customToolbar: () => (
       <ResetFilterButton
-        onClick={() => {
-          setRequestParams({
-            ...initialState,
-            search: {
-              value: initialState.search
-            } as any
-          });
-        }}
+        onClick={() => { dispatch(Creators.resetState())}}
       ></ResetFilterButton>
     ),
-    onSearchChange: handleSearchChange,
-    onChangePage: handleChangePage,
-    onChangeRowsPerPage: handleChangeRowsPerPage,
-    onColumnSortChange: handleColumnSortChange,
+    onSearchChange: (searchText) => dispatch(Creators.setSearch(searchText ?? '')),
+    onChangePage: (currentPage) => dispatch(Creators.setPage(currentPage + 1)),
+    onChangeRowsPerPage: (perPage) => dispatch(Creators.setPerPage(perPage)),
+    onColumnSortChange:(column, dir) =>  dispatch(Creators.setOrder(column, dir)),
   };
 
   const fetchData = useCallback(async () => {
