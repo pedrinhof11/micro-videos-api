@@ -16,7 +16,7 @@ import BaseForm from "../../components/Forms/BaseForm";
 import SubmitActions from "../../components/Forms/SubmitActions";
 import CastMemberResource from "../../http/CastMemberResource";
 import { CastMember } from "../../types/models";
-import { useIsMountedRef } from "../../utils";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 import { yup } from "../../utils/yup";
 
 const castMembersValidation = yup.object().shape({

@@ -9,7 +9,7 @@ import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import GenreResource from "../../http/GenreResource";
 import { Category, Genre } from "../../types/models";
-import { useIsMountedRef } from "../../utils";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 import { yup } from "../../utils/yup";
 
 const validationSchema = yup.object().shape({

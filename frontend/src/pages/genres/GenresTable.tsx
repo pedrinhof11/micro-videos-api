@@ -8,7 +8,8 @@ import BaseTable, {
 } from "../../components/Table/BaseTable";
 import GenreResource from "../../http/GenreResource";
 import { Category, Genre } from "../../types/models";
-import { dateFormatFromIso, useIsMountedRef } from "../../utils";
+import { dateFormatFromIso } from "../../utils";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 
 const columns: TableColumn[] = [
   { name: "id", label: "ID", options: { sort: false }, width: "33%" },

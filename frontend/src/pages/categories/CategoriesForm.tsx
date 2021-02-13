@@ -8,7 +8,7 @@ import BaseForm from "../../components/Forms/BaseForm";
 import SubmitActions from "../../components/Forms/SubmitActions";
 import CategoryResource from "../../http/CategoryResource";
 import { Category } from "../../types/models";
-import { useIsMountedRef } from "../../utils";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 import { yup } from "../../utils/yup";
 
 const categoryValidation = yup.object().shape({

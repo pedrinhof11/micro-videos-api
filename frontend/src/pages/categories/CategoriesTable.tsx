@@ -2,7 +2,7 @@ import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import { MUIDataTableOptions } from "mui-datatables";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useEffect, useReducer, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BaseTable, {
   makeActionThemes,
@@ -10,9 +10,11 @@ import BaseTable, {
 } from "../../components/Table/BaseTable";
 import ResetFilterButton from "../../components/Table/ResetFilterButton";
 import CategoryResource from "../../http/CategoryResource";
-import reducer, { INITIAL_STATE, Creators } from "../../store/search";
+import { Creators } from "../../store/filter";
 import { Category } from "../../types/models";
-import { dateFormatFromIso, useIsMountedRef } from "../../utils";
+import { dateFormatFromIso } from "../../utils";
+import useFilter from "../../hooks/useFilter";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 
 const columns: TableColumn[] = [
   { name: "id", label: "ID", options: { sort: false }, width: "33%" },
@@ -72,15 +74,14 @@ const CategoriesTable = () => {
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [total, setTotal] = useState<number>(0);
-  const [requestParams, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const {filter, dispatch, totalRecords, setTotalRecords} = useFilter();
 
   const options: MUIDataTableOptions = {
     serverSide: true,
-    searchText: requestParams.search as any,
-    page: requestParams.page - 1,
-    rowsPerPage: requestParams.perPage,
-    count: total,
+    searchText: filter.search as any,
+    page: filter.page - 1,
+    rowsPerPage: filter.perPage,
+    count: totalRecords,
     customToolbar: () => (
       <ResetFilterButton
         onClick={() => { dispatch(Creators.resetState())}}
@@ -95,14 +96,14 @@ const CategoriesTable = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { search, ...params } = requestParams as any
+      const { search, ...params } = filter as any
       const { data } = await CategoryResource.list({ 
         ...params, 
         search: search?.value !== undefined ? search.value : search 
       });
       if (isMountedRef.current) {
         setCategories(data.data);
-        setTotal(data.meta!.total);
+        setTotalRecords(data.meta!.total);
       }
     } catch (error) {
       if (CategoryResource.isCancel(error)) {
@@ -114,7 +115,7 @@ const CategoriesTable = () => {
     } finally {
       setLoading(false);
     }
-  }, [requestParams, isMountedRef, snackbar]);
+  }, [filter, isMountedRef, snackbar, setTotalRecords]);
 
   useEffect(() => {
     fetchData();
