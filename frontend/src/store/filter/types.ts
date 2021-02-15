@@ -48,3 +48,5 @@ export interface ActionCreators {
   setOrder(sort: SetOrderAction['sort'], dir: SetOrderAction['dir']): SetOrderAction,
   resetState(): AnyAction
 }
+
+export type Actions = SetSearchAction | SetPageAction | SetPerPageAction | SetOrderAction | SetOrderAction | ResetStateAction

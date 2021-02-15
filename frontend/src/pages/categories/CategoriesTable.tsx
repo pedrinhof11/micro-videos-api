@@ -69,36 +69,30 @@ const columns: TableColumn[] = [
   },
 ];
 
+const debounceTime = 300;
+const debounceSearch = 300;
+const rowsPerPage = 15;
+const rowsPerPageOptions = [15, 25, 50]
 const CategoriesTable = () => {
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const {filter, dispatch, totalRecords, setTotalRecords} = useFilter();
-
-  const options: MUIDataTableOptions = {
-    serverSide: true,
-    searchText: filter.search as any,
-    page: filter.page - 1,
-    rowsPerPage: filter.perPage,
-    count: totalRecords,
-    customToolbar: () => (
-      <ResetFilterButton
-        onClick={() => { dispatch(Creators.resetState())}}
-      ></ResetFilterButton>
-    ),
-    onSearchChange: (searchText) => dispatch(Creators.setSearch(searchText ?? '')),
-    onChangePage: (currentPage) => dispatch(Creators.setPage(currentPage + 1)),
-    onChangeRowsPerPage: (perPage) => dispatch(Creators.setPerPage(perPage)),
-    onColumnSortChange:(column, dir) =>  dispatch(Creators.setOrder(column, dir)),
-  };
+  const { 
+    filterManager, filter, debouncedFilter, dispatch, totalRecords, setTotalRecords 
+  } = useFilter({
+    columns,
+    debounceTime,
+    rowsPerPage,
+    rowsPerPageOptions
+  });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { search, ...params } = filter as any
+      const { search,...params } = debouncedFilter as any
       const { data } = await CategoryResource.list({ 
-        ...params, 
+        ...params,
         search: search?.value !== undefined ? search.value : search 
       });
       if (isMountedRef.current) {
@@ -115,12 +109,34 @@ const CategoriesTable = () => {
     } finally {
       setLoading(false);
     }
-  }, [filter, isMountedRef, snackbar, setTotalRecords]);
+  }, [debouncedFilter, isMountedRef, snackbar, setTotalRecords]);
 
   useEffect(() => {
+    filterManager.pushHistory()
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    filterManager.replaceHistory();
+  }, []);
+
+  const options: MUIDataTableOptions = {
+    serverSide: true,
+    searchText: filter.search as any,
+    page: filter.page - 1,
+    rowsPerPage: filter.perPage,
+    rowsPerPageOptions,
+    count: totalRecords,
+    customToolbar: () => (
+      <ResetFilterButton
+        onClick={() => { dispatch(Creators.resetState())}}
+      ></ResetFilterButton>
+    ),
+    onSearchChange: (searchText) => filterManager.changeSearch(searchText),
+    onChangePage: (currentPage) => filterManager.changePage(currentPage),
+    onChangeRowsPerPage: (numberOfRows) => filterManager.changeRowsPerPage(numberOfRows),
+    onColumnSortChange: (column, dir) => filterManager.changeColumnSort(column, dir),
+  };
   return (
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
       <BaseTable
@@ -129,7 +145,7 @@ const CategoriesTable = () => {
         data={categories}
         loading={loading}
         options={options}
-        debounceSearch={500}
+        debounceSearch={debounceSearch}
       />
     </MuiThemeProvider>
   );
