@@ -75,7 +75,14 @@ interface TableProps extends MUIDataTableProps {
   loading?: boolean;
   debounceSearch?: number;
 }
-const BaseTable: React.FC<TableProps> = (props) => {
+
+export interface MUIDataTableRefComponent {
+  changePage: (currentPage: number) => void;
+  changeRowsPerPage: (numberOfRows: number) => void;
+}
+
+
+const BaseTable: React.ForwardRefRenderFunction<MUIDataTableRefComponent, TableProps> = (props, ref) => {
   const theme = cloneDeep<Theme>(useTheme());
   const isSmOrDown = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -110,7 +117,10 @@ const BaseTable: React.FC<TableProps> = (props) => {
   }
 
   function getOriginalProps() {
-    return omit(mergedProps, "loading");
+    return {
+      ...omit(mergedProps, "loading"),
+      ref
+    }
   }
 
   const defaultOptions = makeDefaultOptions(props.debounceSearch ?? 0)
@@ -144,4 +154,4 @@ export function makeActionThemes(column: number) {
   };
 }
 
-export default BaseTable;
+export default React.forwardRef(BaseTable);

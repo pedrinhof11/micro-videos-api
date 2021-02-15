@@ -7,6 +7,7 @@ import { useHistory } from "react-router";
 import { History } from "history";
 import { isEqual } from "lodash";
 import { yup } from "../utils/yup";
+import { MUIDataTableRefComponent } from "../components/Table/BaseTable";
 
 export const useFilter = (options: FilterManagerOptions) => {
   const history = useHistory();
@@ -32,6 +33,7 @@ export interface FilterManagerOptions {
   columns: MUIDataTableColumn[];
   rowsPerPage: number;
   rowsPerPageOptions: number[];
+  tableRef: React.RefObject<MUIDataTableRefComponent>
   debounceTime?: number;
   history?: History;
 }
@@ -43,13 +45,16 @@ export class FilterManager {
   columns: MUIDataTableColumn[];
   rowsPerPage: number;
   rowsPerPageOptions: number[];
+  tableRef: React.RefObject<MUIDataTableRefComponent>;
   history?: History;
 
-  constructor({columns, rowsPerPage, rowsPerPageOptions, history}: FilterManagerOptions) {
+  constructor({columns, rowsPerPage, rowsPerPageOptions, history, tableRef}: FilterManagerOptions) {
     this.columns = columns;
     this.rowsPerPage = rowsPerPage;
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.history = history;
+    this.tableRef = tableRef;
+    console.log(tableRef.current)
     this.createValidationSchema();
   }
 
@@ -71,6 +76,13 @@ export class FilterManager {
     } else {
       this.dispatch?.(Creators.setOrder(null, null))
     }
+    this.tableRef.current?.changePage(0);
+  }
+
+  resetFilter() {
+    this.dispatch?.(Creators.resetState());
+    this.tableRef.current?.changeRowsPerPage(this.rowsPerPage);
+    this.tableRef.current?.changePage(0);
   }
 
   getSearchText() {
@@ -132,10 +144,13 @@ export class FilterManager {
       search: yup.string().transform((value) => !value ? undefined : value ).default(""),
       page: yup.number().transform((value) => isNaN(value) || parseInt(value) < 1 ? undefined : value ).default(1),
       perPage: yup.number().oneOf(this.rowsPerPageOptions).transform((value) => isNaN(value) ? undefined : value ).default(this.rowsPerPage),
-      sort: yup.number().nullable().transform((value) => {
+      sort: yup.string().nullable().transform((value) => {
         const columnsName = this.columns.filter((column) => !column.options || column.options.sort !== false).map(column => column.name)
         return columnsName.includes(value) ? value : undefined
       }).default(null),
+      dir: yup.string().nullable().transform(
+        (value) => !value || !["asc","desc", "none"].includes(value.toLowerCase()) ? undefined : value
+      ).default(null)
     })
   }
 }

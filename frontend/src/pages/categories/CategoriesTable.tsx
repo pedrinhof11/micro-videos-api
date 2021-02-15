@@ -2,15 +2,15 @@ import { Chip, IconButton, MuiThemeProvider } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import { MUIDataTableOptions } from "mui-datatables";
 import { useSnackbar } from "notistack";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import BaseTable, {
   makeActionThemes,
   TableColumn,
+  MUIDataTableRefComponent,
 } from "../../components/Table/BaseTable";
 import ResetFilterButton from "../../components/Table/ResetFilterButton";
 import CategoryResource from "../../http/CategoryResource";
-import { Creators } from "../../store/filter";
 import { Category } from "../../types/models";
 import { dateFormatFromIso } from "../../utils";
 import useFilter from "../../hooks/useFilter";
@@ -22,7 +22,6 @@ const columns: TableColumn[] = [
     name: "name",
     label: "Nome",
     width: "40%",
-    options: { sort: true, sortThirdClickReset: true },
   },
   {
     name: "is_active",
@@ -78,13 +77,15 @@ const CategoriesTable = () => {
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const tableRef = useRef<MUIDataTableRefComponent>(null);
   const { 
-    filterManager, filter, debouncedFilter, dispatch, totalRecords, setTotalRecords 
+    filterManager, filter, debouncedFilter, totalRecords, setTotalRecords 
   } = useFilter({
     columns,
     debounceTime,
     rowsPerPage,
-    rowsPerPageOptions
+    rowsPerPageOptions,
+    tableRef
   });
 
   const fetchData = useCallback(async () => {
@@ -114,10 +115,12 @@ const CategoriesTable = () => {
   useEffect(() => {
     filterManager.pushHistory()
     fetchData();
+    // eslint-disable-next-line
   }, [fetchData]);
 
   useEffect(() => {
     filterManager.replaceHistory();
+    // eslint-disable-next-line
   }, []);
 
   const options: MUIDataTableOptions = {
@@ -129,7 +132,7 @@ const CategoriesTable = () => {
     count: totalRecords,
     customToolbar: () => (
       <ResetFilterButton
-        onClick={() => { dispatch(Creators.resetState())}}
+        onClick={() => filterManager.resetFilter()}
       ></ResetFilterButton>
     ),
     onSearchChange: (searchText) => filterManager.changeSearch(searchText),
@@ -141,6 +144,7 @@ const CategoriesTable = () => {
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
       <BaseTable
         title=""
+        ref={tableRef}
         columns={columns}
         data={categories}
         loading={loading}
