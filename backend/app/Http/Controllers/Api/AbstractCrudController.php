@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 
 
 use App\Http\Controllers\Controller;
+use EloquentFilter\Filterable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -33,9 +35,17 @@ abstract class AbstractCrudController extends Controller
 
     public function index(Request $request)
     {
-        $data = $this->hasPagination
-            ? $this->modelInstance::paginate($request->get('per_page', $this->perPage))
-            : $this->modelInstance::all();
+        $perPage = (int) $request->get('perPage', $this->perPage);
+        $hasFilters = in_array(Filterable::class, class_uses($this->model()));
+        $query = $this->getQuery();
+
+        if($hasFilters) {
+            $query->filter($request->all());
+        }
+
+        $data = !$request->has('all') && $this->hasPagination
+            ? $query->paginate($perPage)
+            : $query->get();
 
         $resource = $this->resourceCollection();
         $refResource = new \ReflectionClass($resource);
@@ -53,7 +63,7 @@ abstract class AbstractCrudController extends Controller
     public function store(Request $request)
     {
         $data = $this->validate($request, $this->rulesStore());
-        $obj = $this->model()::create($data);
+        $obj =$this->getQuery()->create($data);
         $obj->refresh();
         return $this->resource()::make($obj);
     }
@@ -93,12 +103,17 @@ abstract class AbstractCrudController extends Controller
     protected function findOrFail($key): Model
     {
         $keyName = $this->modelInstance->getRouteKeyName();
-        return $this->modelInstance->newQuery()->where($keyName, $key)->firstOrFail();
+        return $this->getQuery()->where($keyName, $key)->firstOrFail();
     }
 
     private function makeModelInstance(): void
     {
         $model = $this->model();
         $this->modelInstance = (new $model);
+    }
+
+    protected function getQuery() : Builder
+    {
+        return $this->modelInstance->newQuery();
     }
 }

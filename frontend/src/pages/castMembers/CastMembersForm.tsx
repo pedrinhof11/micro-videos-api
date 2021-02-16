@@ -1,31 +1,23 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  Box,
-  Button,
-  ButtonProps,
   FormControl,
   FormControlLabel,
   FormHelperText,
   FormLabel,
-  makeStyles,
   Radio,
   RadioGroup,
   TextField,
-  Theme,
 } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
+import BaseForm from "../../components/Forms/BaseForm";
+import SubmitActions from "../../components/Forms/SubmitActions";
 import CastMemberResource from "../../http/CastMemberResource";
 import { CastMember } from "../../types/models";
+import useIsMountedRef from "../../hooks/useIsMountedRef";
 import { yup } from "../../utils/yup";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  submit: {
-    margin: theme.spacing(1),
-  },
-}));
 
 const castMembersValidation = yup.object().shape({
   name: yup.string().label("nome").required().max(255),
@@ -41,23 +33,17 @@ const CastMembersForm = () => {
     errors,
     reset,
     watch,
+    trigger,
   } = useForm({
     resolver: yupResolver(castMembersValidation),
   });
 
-  const classes = useStyles();
+  const isMountedRef = useIsMountedRef();
   const history = useHistory();
   const snackbar = useSnackbar();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
   const [castMember, setCastMember] = useState<CastMember | null>(null);
-
-  const buttonProps: ButtonProps = {
-    className: classes.submit,
-    color: "secondary",
-    variant: "contained",
-    disabled: loading,
-  };
 
   useEffect(() => {
     register({ name: "type" });
@@ -68,14 +54,16 @@ const CastMembersForm = () => {
       return;
     }
 
-    async function getCastMembers() {
+    (async () => {
       setLoading(true);
       try {
         const {
           data: { data },
         } = await CastMemberResource.get(id);
-        setCastMember(data);
-        reset(data as any);
+        if (isMountedRef) {
+          setCastMember(data);
+          reset(data as any);
+        }
       } catch (error) {
         snackbar.enqueueSnackbar("Não foi possivel carregar as informações", {
           variant: "error",
@@ -83,10 +71,8 @@ const CastMembersForm = () => {
       } finally {
         setLoading(false);
       }
-    }
-
-    getCastMembers();
-  }, [id, reset, snackbar]);
+    })();
+  }, [id, reset, snackbar, isMountedRef]);
 
   const onSubmit = async (formData: any, event?: React.BaseSyntheticEvent) => {
     setLoading(true);
@@ -116,14 +102,22 @@ const CastMembersForm = () => {
     }
   };
 
-  const onSave = async () => onSubmit(getValues());
+  const onSave = async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      onSubmit(getValues());
+    }
+  };
 
   const handleChangeType = (_: any, value: any) => {
     setValue("type", value);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <BaseForm
+      GridItemProps={{ xs: 12, md: 6 }}
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <TextField
         inputRef={register}
         error={errors.name !== undefined}
@@ -157,15 +151,8 @@ const CastMembersForm = () => {
         )}
       </FormControl>
 
-      <Box dir="rtl">
-        <Button {...buttonProps} onClick={onSave}>
-          Salvar
-        </Button>
-        <Button {...buttonProps} type="submit">
-          Salvar e continuar editado
-        </Button>
-      </Box>
-    </form>
+      <SubmitActions disabled={loading} handleSave={onSave}></SubmitActions>
+    </BaseForm>
   );
 };
 

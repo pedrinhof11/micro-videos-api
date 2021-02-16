@@ -54,6 +54,7 @@ const theme = createMuiTheme({
         color: "#fff",
       },
       sortAction: {
+        color: "#fff",
         alignItems: "center",
       },
       sortLabelRoot: {
