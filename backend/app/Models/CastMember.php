@@ -4,12 +4,13 @@ namespace App\Models;
 
 use App\Models\Traits\SerializeDateTrait;
 use App\Models\Traits\UuidTrait;
+use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CastMember extends Model
 {
-    use SoftDeletes, UuidTrait, SerializeDateTrait;
+    use SoftDeletes, UuidTrait, SerializeDateTrait, Filterable;
 
     const TYPE_DIRECTOR = 1;
     const TYPE_ACTOR = 2;

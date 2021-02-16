@@ -54,7 +54,6 @@ export class FilterManager {
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.history = history;
     this.tableRef = tableRef;
-    console.log(tableRef.current)
     this.createValidationSchema();
   }
 
