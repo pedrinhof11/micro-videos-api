@@ -11,4 +11,4 @@ export const useIsMountedRef = () => {
   return isMountedRef;
 };
 
-export default useIsMountedRef
+export default useIsMountedRef;

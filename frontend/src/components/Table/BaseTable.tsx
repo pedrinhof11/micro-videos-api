@@ -13,9 +13,9 @@ import MUIDataTable, {
   MUIDataTableProps,
 } from "mui-datatables";
 import React from "react";
-import BaseTableSearch from "./BaseTableSearch.jsx"
+import BaseTableSearch from "./BaseTableSearch.jsx";
 
-const makeDefaultOptions = (debounceSearch: number) : MUIDataTableOptions => ({
+const makeDefaultOptions = (debounceSearch: number): MUIDataTableOptions => ({
   print: false,
   download: false,
   textLabels: {
@@ -56,16 +56,18 @@ const makeDefaultOptions = (debounceSearch: number) : MUIDataTableOptions => ({
     searchText: string,
     handleSearch: (text: string) => void,
     hideSearch: () => void,
-    options: any,
+    options: any
   ) => {
-    return <BaseTableSearch 
-    searchText={searchText}
-    onSearch={handleSearch}
-    onHide={hideSearch}
-    options={options}
-    debounceSearch={debounceSearch}
-    />
-  }
+    return (
+      <BaseTableSearch
+        searchText={searchText}
+        onSearch={handleSearch}
+        onHide={hideSearch}
+        options={options}
+        debounceSearch={debounceSearch}
+      />
+    );
+  },
 });
 export interface TableColumn extends MUIDataTableColumn {
   width?: string;
@@ -81,8 +83,10 @@ export interface MUIDataTableRefComponent {
   changeRowsPerPage: (numberOfRows: number) => void;
 }
 
-
-const BaseTable: React.ForwardRefRenderFunction<MUIDataTableRefComponent, TableProps> = (props, ref) => {
+const BaseTable: React.ForwardRefRenderFunction<
+  MUIDataTableRefComponent,
+  TableProps
+> = (props, ref) => {
   const theme = cloneDeep<Theme>(useTheme());
   const isSmOrDown = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -119,11 +123,11 @@ const BaseTable: React.ForwardRefRenderFunction<MUIDataTableRefComponent, TableP
   function getOriginalProps() {
     return {
       ...omit(mergedProps, "loading"),
-      ref
-    }
+      ref,
+    };
   }
 
-  const defaultOptions = makeDefaultOptions(props.debounceSearch ?? 0)
+  const defaultOptions = makeDefaultOptions(props.debounceSearch ?? 0);
   const mergedProps = merge({ options: cloneDeep(defaultOptions) }, props, {
     columns: extractMuiDataTableColumns(props.columns),
   });

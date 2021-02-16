@@ -71,30 +71,34 @@ const columns: TableColumn[] = [
 const debounceTime = 300;
 const debounceSearch = 300;
 const rowsPerPage = 15;
-const rowsPerPageOptions = [15, 25, 50]
+const rowsPerPageOptions = [15, 25, 50];
 const CategoriesTable = () => {
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const tableRef = useRef<MUIDataTableRefComponent>(null);
-  const { 
-    filterManager, filter, debouncedFilter, totalRecords, setTotalRecords 
+  const {
+    filterManager,
+    filter,
+    debouncedFilter,
+    totalRecords,
+    setTotalRecords,
   } = useFilter({
     columns,
     debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
-    tableRef
+    tableRef,
   });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { search,...params } = debouncedFilter as any
-      const { data } = await CategoryResource.list({ 
+      const { search, ...params } = debouncedFilter as any;
+      const { data } = await CategoryResource.list({
         ...params,
-        search: search?.value !== undefined ? search.value : search 
+        search: search?.value !== undefined ? search.value : search,
       });
       if (isMountedRef.current) {
         setCategories(data.data);
@@ -113,7 +117,7 @@ const CategoriesTable = () => {
   }, [debouncedFilter, isMountedRef, snackbar, setTotalRecords]);
 
   useEffect(() => {
-    filterManager.pushHistory()
+    filterManager.pushHistory();
     fetchData();
     // eslint-disable-next-line
   }, [fetchData]);
@@ -137,8 +141,10 @@ const CategoriesTable = () => {
     ),
     onSearchChange: (searchText) => filterManager.changeSearch(searchText),
     onChangePage: (currentPage) => filterManager.changePage(currentPage),
-    onChangeRowsPerPage: (numberOfRows) => filterManager.changeRowsPerPage(numberOfRows),
-    onColumnSortChange: (column, dir) => filterManager.changeColumnSort(column, dir),
+    onChangeRowsPerPage: (numberOfRows) =>
+      filterManager.changeRowsPerPage(numberOfRows),
+    onColumnSortChange: (column, dir) =>
+      filterManager.changeColumnSort(column, dir),
   };
   return (
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>

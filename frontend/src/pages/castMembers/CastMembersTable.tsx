@@ -61,21 +61,25 @@ const columns: TableColumn[] = [
 const debounceTime = 300;
 const debounceSearch = 300;
 const rowsPerPage = 15;
-const rowsPerPageOptions = [15, 25, 50]
+const rowsPerPageOptions = [15, 25, 50];
 const CastMembersTable = () => {
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [castMembers, setCastMembers] = useState<CastMember[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const tableRef = useRef<MUIDataTableRefComponent>(null);
-  const { 
-    filterManager, filter, debouncedFilter, totalRecords, setTotalRecords 
+  const {
+    filterManager,
+    filter,
+    debouncedFilter,
+    totalRecords,
+    setTotalRecords,
   } = useFilter({
     columns,
     debounceTime,
     rowsPerPage,
     rowsPerPageOptions,
-    tableRef
+    tableRef,
   });
 
   useEffect(() => {
@@ -84,10 +88,10 @@ const CastMembersTable = () => {
     (async () => {
       setLoading(true);
       try {
-        const { search,...params } = debouncedFilter as any
+        const { search, ...params } = debouncedFilter as any;
         const { data } = await CastMemberResource.list({
           ...params,
-          search: search?.value !== undefined ? search.value : search   
+          search: search?.value !== undefined ? search.value : search,
         });
         if (isMountedRef.current) {
           setCastMembers(data.data);
@@ -104,7 +108,7 @@ const CastMembersTable = () => {
         setLoading(false);
       }
     })();
-     // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [debouncedFilter, isMountedRef, snackbar, setTotalRecords]);
 
   useEffect(() => {
@@ -126,13 +130,15 @@ const CastMembersTable = () => {
     ),
     onSearchChange: (searchText) => filterManager.changeSearch(searchText),
     onChangePage: (currentPage) => filterManager.changePage(currentPage),
-    onChangeRowsPerPage: (numberOfRows) => filterManager.changeRowsPerPage(numberOfRows),
-    onColumnSortChange: (column, dir) => filterManager.changeColumnSort(column, dir),
+    onChangeRowsPerPage: (numberOfRows) =>
+      filterManager.changeRowsPerPage(numberOfRows),
+    onColumnSortChange: (column, dir) =>
+      filterManager.changeColumnSort(column, dir),
   };
 
   return (
     <MuiThemeProvider theme={makeActionThemes(columns.length - 1)}>
-       <BaseTable
+      <BaseTable
         title=""
         ref={tableRef}
         columns={columns}
