@@ -46,8 +46,8 @@ steps:
     args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'migrate']
 
   - id: "Rodando Tests"
-    name: 'docker/compose'
-    args: ['exec', 'app', 'php', '/var/www/backend/artisan', 'test']
+    name: 'docker'
+    args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'test']
   
   - id: "Copiando .env do frontend"
     name: 'docker'
