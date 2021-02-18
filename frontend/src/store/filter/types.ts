@@ -37,7 +37,9 @@ export interface ResetStateAction extends AnyAction {
 }
 
 export interface UpdateExtraFilterAction extends AnyAction {
-  [key: string] : any
+  payload: {
+    [key: string] : any
+  }
 }
 
 export interface ActionTypes {

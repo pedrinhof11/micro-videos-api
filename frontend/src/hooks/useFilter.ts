@@ -108,6 +108,10 @@ export class FilterManager {
     this.tableRef.current?.changePage(0);
   }
 
+  changeExtraFilter(data: any) {
+    this.dispatch?.(Creators.updateExtraFilter(data))
+  }
+
   resetFilter() {
     const INITIAL_STATE = {
       ...this.schema.cast({}),

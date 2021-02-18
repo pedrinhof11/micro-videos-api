@@ -10,6 +10,7 @@ export const { Types, Creators } = createActions<
   setPerPage: ["perPage"],
   setOrder: ["sort", "dir"],
   resetState: ["state"],
+  updateExtraFilter: ["payload"],
 });
 
 export const INITIAL_STATE: typings.State = {
@@ -70,7 +71,7 @@ const resetState = (
 
 const updateExtraFilter = (
   state = INITIAL_STATE,
-  payload: typings.UpdateExtraFilterAction
+  { payload }: typings.UpdateExtraFilterAction
 ) => {
   return {
     ...state,

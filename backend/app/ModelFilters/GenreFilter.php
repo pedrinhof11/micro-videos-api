@@ -17,7 +17,7 @@ class GenreFilter extends AbstractFilter
     {
         $this->whereHas('categories', function (Builder $query) use ($categories) {
             $query->whereIn('id', $categories)
-                ->orWhereIn('name', $categories)
+                ->orWhereIn('name', $categories);
         });
     }
 }
