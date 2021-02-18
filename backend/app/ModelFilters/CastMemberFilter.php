@@ -2,6 +2,7 @@
 
 namespace App\ModelFilters;
 
+use App\Models\CastMember;
 
 class CastMemberFilter extends AbstractFilter
 {
@@ -9,6 +10,14 @@ class CastMemberFilter extends AbstractFilter
 
     public function search($name)
     {
-        return $this->where('name', 'LIKE', "%$name%");
+        $this->where('name', 'LIKE', "%$name%");
+    }
+
+    public function type($type)
+    {
+        $type = (int) $type;
+        if (in_array($type, CastMember::$types)) {
+            $this->where('type', $type);
+        }
     }
 }

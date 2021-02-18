@@ -9,7 +9,7 @@ export const { Types, Creators } = createActions<
   setPage: ["page"],
   setPerPage: ["perPage"],
   setOrder: ["sort", "dir"],
-  resetState: [],
+  resetState: ["state"],
 });
 
 export const INITIAL_STATE: typings.State = {
@@ -30,12 +30,14 @@ const setSearch = (
     page: 1,
   };
 };
+
 const setPage = (state = INITIAL_STATE, { page }: typings.SetPageAction) => {
   return {
     ...state,
     page,
   };
 };
+
 const setPerPage = (
   state = INITIAL_STATE,
   { perPage }: typings.SetPerPageAction
@@ -45,6 +47,7 @@ const setPerPage = (
     perPage,
   };
 };
+
 const setOrder = (
   state = INITIAL_STATE,
   { sort, dir }: typings.SetOrderAction
@@ -55,10 +58,26 @@ const setOrder = (
     dir,
   };
 };
-const resetState = () => {
+
+const resetState = (
+  _: typings.State,
+  action: typings.ResetStateAction
+) => {
   return {
-    ...INITIAL_STATE,
-    search: { value: null, update: true },
+    ...action.state
+  };
+};
+
+const updateExtraFilter = (
+  state = INITIAL_STATE,
+  payload: typings.UpdateExtraFilterAction
+) => {
+  return {
+    ...state,
+    extraFilter: {
+      ...state.extraFilter,
+      ...payload
+    }
   };
 };
 
@@ -68,6 +87,7 @@ export const reducer = createReducer(INITIAL_STATE, {
   [Types.SET_PER_PAGE]: setPerPage,
   [Types.SET_ORDER]: setOrder,
   [Types.RESET_STATE]: resetState,
+  [Types.UPDATE_EXTRA_FILTER]: updateExtraFilter
 });
 
 export default reducer;

@@ -9,6 +9,6 @@ class CategoryFilter extends AbstractFilter
 
     public function search($name)
     {
-        return $this->where('name', 'LIKE', "%$name%");
+        $this->where('name', 'LIKE', "%$name%");
     }
 }

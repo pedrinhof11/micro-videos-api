@@ -122,11 +122,6 @@ const CategoriesTable = () => {
     // eslint-disable-next-line
   }, [fetchData]);
 
-  useEffect(() => {
-    filterManager.replaceHistory();
-    // eslint-disable-next-line
-  }, []);
-
   const options: MUIDataTableOptions = {
     serverSide: true,
     searchText: filter.search as any,

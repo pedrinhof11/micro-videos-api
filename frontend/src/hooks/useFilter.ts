@@ -1,5 +1,5 @@
 import { MUIDataTableColumn } from "mui-datatables";
-import { useState, useReducer, Dispatch, Reducer } from "react";
+import { useState, useReducer, Dispatch, Reducer, useEffect } from "react";
 import { reducer, Creators } from "../store/filter";
 import {
   State as FilterState,
@@ -12,7 +12,24 @@ import { isEqual } from "lodash";
 import { yup } from "../utils/yup";
 import { MUIDataTableRefComponent } from "../components/Table/BaseTable";
 
-export const useFilter = (options: FilterManagerOptions) => {
+export interface UseFilterOptions {
+  columns: MUIDataTableColumn[];
+  rowsPerPage: number;
+  rowsPerPageOptions: number[];
+  tableRef: React.RefObject<MUIDataTableRefComponent>;
+  debounceTime?: number;
+  extraFilter?: ExtraFilter
+}
+export interface ExtraFilter {
+  getStateFromUrl: (queryParams: URLSearchParams) => any,
+  formatSearchParams: (debouncedState: FilterState) => any
+  createValidationSchema: () => any
+}
+export interface FilterManagerOptions extends UseFilterOptions {
+  history: History;
+}
+
+export const useFilter = (options: UseFilterOptions) => {
   const history = useHistory();
   const filterManager = new FilterManager({ ...options, history });
   const INITIAL_STATE = filterManager.getStateFromURLSearchParams();
@@ -26,6 +43,11 @@ export const useFilter = (options: FilterManagerOptions) => {
   filterManager.debouncedFilter = debouncedFilter;
   filterManager.dispatch = dispatch;
 
+  useEffect(() => {
+    filterManager.replaceHistory();
+    // eslint-disable-next-line
+  }, []);
+
   return {
     filterManager,
     filter,
@@ -35,15 +57,6 @@ export const useFilter = (options: FilterManagerOptions) => {
     setTotalRecords,
   };
 };
-
-export interface FilterManagerOptions {
-  columns: MUIDataTableColumn[];
-  rowsPerPage: number;
-  rowsPerPageOptions: number[];
-  tableRef: React.RefObject<MUIDataTableRefComponent>;
-  debounceTime?: number;
-  history?: History;
-}
 
 export class FilterManager {
   schema: any;
@@ -55,6 +68,7 @@ export class FilterManager {
   rowsPerPageOptions: number[];
   tableRef: React.RefObject<MUIDataTableRefComponent>;
   history?: History;
+  extraFilter?: ExtraFilter;
 
   constructor({
     columns,
@@ -62,12 +76,14 @@ export class FilterManager {
     rowsPerPageOptions,
     history,
     tableRef,
+    extraFilter
   }: FilterManagerOptions) {
     this.columns = columns;
     this.rowsPerPage = rowsPerPage;
     this.rowsPerPageOptions = rowsPerPageOptions;
     this.history = history;
     this.tableRef = tableRef;
+    this.extraFilter = extraFilter;
     this.createValidationSchema();
   }
 
@@ -93,7 +109,11 @@ export class FilterManager {
   }
 
   resetFilter() {
-    this.dispatch?.(Creators.resetState());
+    const INITIAL_STATE = {
+      ...this.schema.cast({}),
+      search: {value: null, update: true}
+    };
+    this.dispatch?.(Creators.resetState(INITIAL_STATE));
     this.tableRef.current?.changeRowsPerPage(this.rowsPerPage);
     this.tableRef.current?.changePage(0);
   }
@@ -137,6 +157,11 @@ export class FilterManager {
       perPage: queryParams.get("perPage"),
       sort: queryParams.get("sort"),
       dir: queryParams.get("dir"),
+      ...( 
+        this.extraFilter && {
+          extraFilter: this.extraFilter.getStateFromUrl(queryParams)
+        }
+      )
     });
   }
 
@@ -155,6 +180,9 @@ export class FilterManager {
           sort: this.debouncedFilter?.sort,
           dir: this.debouncedFilter?.dir,
         }),
+      ...(
+        this.extraFilter && this.debouncedFilter && this.extraFilter.formatSearchParams(this.debouncedFilter)
+      )
     };
     return new URLSearchParams(format as any).toString();
   }
@@ -200,6 +228,7 @@ export class FilterManager {
             : value
         )
         .default(null),
+      ...(this.extraFilter && {extraFilter: this.extraFilter.createValidationSchema()})
     });
   }
 }
