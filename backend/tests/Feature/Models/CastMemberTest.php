@@ -5,6 +5,8 @@ namespace Tests\Feature\Models;
 use App\Models\CastMember;
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
+use Ramsey\Uuid\Rfc4122\UuidV4;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -50,7 +52,8 @@ class CastMemberTest extends TestCase
 
         $uuid = Uuid::fromString($castMember->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($castMember->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($castMember->id, $uuid->toString());
         $this->assertEquals('test Create', $castMember->name);
         $this->assertEquals(CastMember::TYPE_DIRECTOR, $castMember->type);
@@ -66,7 +69,8 @@ class CastMemberTest extends TestCase
 
         $uuid = Uuid::fromString($castMember->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($castMember->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($castMember->id, $uuid->toString());
         $this->assertEquals('test Create', $castMember->name);
         $this->assertEquals(CastMember::TYPE_ACTOR, $castMember->type);

@@ -7,6 +7,7 @@ use App\Models\Genre;
 use App\Models\Video;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 
 
@@ -47,7 +48,8 @@ class VideoCrudTest extends BaseVideoTestCase
 
         $uuid = Uuid::fromString($video->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($video->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($video->id, $uuid->toString());
         $this->assertDatabaseHas($video->getTable(), $this->data);
     }
@@ -64,7 +66,8 @@ class VideoCrudTest extends BaseVideoTestCase
 
         $uuid = Uuid::fromString($video->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($video->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($video->id, $uuid->toString());
         $this->assertDatabaseHas($video->getTable(), $this->data);
         $this->assertHasCategory($video->id, $category->id);

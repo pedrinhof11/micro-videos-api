@@ -4,6 +4,7 @@ namespace Tests\Feature\Models;
 
 use App\Models\Genre;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -48,7 +49,8 @@ class GenreTest extends TestCase
 
         $uuid = Uuid::fromString($genre->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($genre->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($genre->id, $uuid->toString());
         $this->assertEquals('test Create', $genre->name);
         $this->assertNull($genre->description);
@@ -65,7 +67,8 @@ class GenreTest extends TestCase
 
         $uuid = Uuid::fromString($genre->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($genre->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($genre->id, $uuid->toString());
         $this->assertEquals('test Create', $genre->name);
         $this->assertFalse($genre->is_active);
