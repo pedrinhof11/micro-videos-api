@@ -48,8 +48,11 @@ class AbstractCrudControllerTest extends TestCase
 
         $request = \Mockery::mock(Request::class);
         $request->shouldReceive('get')
-            ->with('per_page', 15)
+            ->with('perPage', 15)
             ->andReturn(15);
+        $request->shouldReceive('has')
+            ->with('all')
+            ->andReturn(false);
         $result = $this->controller->index($request)->response()->getData(true);
         $this->assertArrayHasKey('meta', $result);
         $this->assertArrayHasKey('links', $result);
