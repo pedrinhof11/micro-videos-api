@@ -49,9 +49,9 @@ steps:
     name: 'docker'
     args: ['exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'test']
   
-  - id: "Copiando .env do fontend"
+  - id: "Copiando .env do frontend"
     name: 'docker'
-    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/fontend/.env.example', '/var/www/fontend/.env']
+    args: ['exec', '-t', 'micro-videos-app', 'cp', '/var/www/frontend/.env.example', '/var/www/frontend/.env']
 
   - id: "Rodando o npm install"
     name: 'docker'

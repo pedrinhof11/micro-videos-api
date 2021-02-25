@@ -2,6 +2,7 @@
 
 namespace App\ModelFilters;
 
+use Illuminate\Database\Eloquent\Builder;
 
 class GenreFilter extends AbstractFilter
 {
@@ -9,6 +10,14 @@ class GenreFilter extends AbstractFilter
 
     public function search($name)
     {
-        return $this->where('name', 'LIKE', "%$name%");
+        $this->where('name', 'LIKE', "%$name%");
+    }
+
+    public function categories($categories)
+    {
+        $this->whereHas('categories', function (Builder $query) use ($categories) {
+            $query->whereIn('id', $categories)
+                ->orWhereIn('name', $categories);
+        });
     }
 }

@@ -99,6 +99,11 @@ const theme = createMuiTheme({
         color: palette.primary.main,
       },
     },
+    MUIDataTableFilterList: {
+      root: {
+        marginBottom: "16px"
+      }
+    }
   },
 });
 

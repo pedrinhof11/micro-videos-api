@@ -15,6 +15,11 @@ class CastMember extends Model
     const TYPE_DIRECTOR = 1;
     const TYPE_ACTOR = 2;
 
+    public static $types = [
+        self::TYPE_DIRECTOR,
+        self::TYPE_ACTOR
+    ];
+
     protected $keyType = "string";
     public $incrementing = false;
 

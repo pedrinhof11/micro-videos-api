@@ -17,17 +17,26 @@ import useFilter from "../../hooks/useFilter";
 import useIsMountedRef from "../../hooks/useIsMountedRef";
 
 const columns: TableColumn[] = [
-  { name: "id", label: "ID", options: { sort: false }, width: "33%" },
+  { 
+    name: "id", 
+    label: "ID", 
+    options: { sort: false, filter: false },
+    width: "33%" 
+  },
   {
     name: "name",
     label: "Nome",
     width: "40%",
+    options: { filter: false },
   },
   {
     name: "is_active",
     label: "Ativo?",
     width: "4%",
     options: {
+      filterOptions: {
+        names: ['Sim', 'Não']
+      },
       customBodyRender: (value) => {
         return (value as any) ? (
           <Chip label="Sim" color="primary" />
@@ -42,6 +51,7 @@ const columns: TableColumn[] = [
     label: "Criado em",
     width: "10%",
     options: {
+      filter: false,
       customBodyRender: (value) => {
         return <span>{dateFormatFromIso(value, "dd/MM/yyyy")}</span>;
       },
@@ -52,6 +62,7 @@ const columns: TableColumn[] = [
     label: "Ações",
     width: "13%",
     options: {
+      filter: false,
       customBodyRender: (value, tableMeta) => {
         return (
           <IconButton
@@ -121,11 +132,6 @@ const CategoriesTable = () => {
     fetchData();
     // eslint-disable-next-line
   }, [fetchData]);
-
-  useEffect(() => {
-    filterManager.replaceHistory();
-    // eslint-disable-next-line
-  }, []);
 
   const options: MUIDataTableOptions = {
     serverSide: true,

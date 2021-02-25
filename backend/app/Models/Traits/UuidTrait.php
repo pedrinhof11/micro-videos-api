@@ -10,6 +10,7 @@ trait UuidTrait
 {
     public static function bootUuidTrait() {
         static::creating(function (Model $model) {
+            $model->incrementing = false;
             $model->setAttribute($model->getKeyName(), Uuid::uuid4()->toString());
         });
     }

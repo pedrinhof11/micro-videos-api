@@ -4,6 +4,7 @@ namespace Tests\Feature\Models;
 
 use App\Models\Category;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -49,7 +50,8 @@ class CategoryTest extends TestCase
 
         $uuid = Uuid::fromString($category->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($category->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($category->id, $uuid->toString());
         $this->assertEquals('test Create', $category->name);
         $this->assertNull($category->description);
@@ -67,7 +69,8 @@ class CategoryTest extends TestCase
 
         $uuid = Uuid::fromString($category->id);
 
-        $this->assertInstanceOf(Uuid::class, $uuid);
+        $this->assertTrue(Uuid::isValid($category->id));
+        $this->assertInstanceOf(LazyUuidFromString::class, $uuid);
         $this->assertSame($category->id, $uuid->toString());
         $this->assertEquals('test Create', $category->name);
         $this->assertEquals('test description', $category->description);

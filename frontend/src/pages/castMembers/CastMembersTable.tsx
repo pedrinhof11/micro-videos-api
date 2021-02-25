@@ -15,15 +15,30 @@ import { useSnackbar } from "notistack";
 import useFilter from "../../hooks/useFilter";
 import { MUIDataTableOptions } from "mui-datatables";
 import ResetFilterButton from "../../components/Table/ResetFilterButton";
+import { yup } from "../../utils/yup";
+
+const debounceTime = 300;
+const debounceSearch = 300;
+const rowsPerPage = 15;
+const rowsPerPageOptions = [15, 25, 50];
+const castMembersNames = Object.keys(CastMemberTypesEnum).filter(x => !(parseInt(x) >= 0));
 
 const columns: TableColumn[] = [
-  { name: "id", label: "ID", options: { sort: false }, width: "25%" },
-  { name: "name", label: "Nome", width: "40%" },
+  { 
+    name: "id", label: "ID", options: { sort: false , filter: false}, width: "25%" 
+  },
+  { 
+    name: "name", label: "Nome", width: "40%",  options: { filter: false }
+  },
   {
     name: "type",
     label: "Tipo",
     width: "10%",
     options: {
+      
+      filterOptions: {
+        names: castMembersNames
+      },
       customBodyRender: (value: any) => CastMemberTypesEnum[value as any],
     },
   },
@@ -32,6 +47,7 @@ const columns: TableColumn[] = [
     label: "Criado em",
     width: "10%",
     options: {
+      filter: false,
       customBodyRender: (value: string) => (
         <span>{dateFormatFromIso(value, "dd/MM/yyyy")}</span>
       ),
@@ -42,6 +58,7 @@ const columns: TableColumn[] = [
     label: "Ações",
     width: "10%",
     options: {
+      filter: false,
       customBodyRender: (value: any, tableMeta: { rowData: any[] }) => {
         return (
           <IconButton
@@ -58,10 +75,7 @@ const columns: TableColumn[] = [
   },
 ];
 
-const debounceTime = 300;
-const debounceSearch = 300;
-const rowsPerPage = 15;
-const rowsPerPageOptions = [15, 25, 50];
+
 const CastMembersTable = () => {
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
@@ -80,7 +94,28 @@ const CastMembersTable = () => {
     rowsPerPage,
     rowsPerPageOptions,
     tableRef,
+    extraFilter: {
+      createValidationSchema() {
+        return yup.object().shape({
+          type: yup.string()
+          .nullable()
+          .transform((value) => !value && castMembersNames.includes(value)? undefined : value)
+          .default(null)
+        })
+      },
+      formatSearchParams(debouncedState){
+        return debouncedState.extraFilter?.type ? { type: debouncedState.extraFilter.type } : undefined
+      },
+      getStateFromUrl(queryParams) {
+        return {
+          type: queryParams.get('type')
+        }
+      }
+    }
   });
+  const columnType = columns.find(c => c.name === 'type');
+  const typefilterValue = filter.extraFilter?.type;
+  columnType!.options!.filterList = typefilterValue ? [typefilterValue] : [];
 
   useEffect(() => {
     filterManager.pushHistory();
@@ -88,10 +123,11 @@ const CastMembersTable = () => {
     (async () => {
       setLoading(true);
       try {
-        const { search, ...params } = debouncedFilter as any;
+        const { search, extraFilter, ...params } = debouncedFilter as any;
         const { data } = await CastMemberResource.list({
           ...params,
           search: search?.value !== undefined ? search.value : search,
+          ...(extraFilter?.type && {type: CastMemberTypesEnum[extraFilter.type]})
         });
         if (isMountedRef.current) {
           setCastMembers(data.data);
@@ -123,6 +159,16 @@ const CastMembersTable = () => {
     rowsPerPage: filter.perPage,
     rowsPerPageOptions,
     count: totalRecords,
+    onFilterChange: (column, filterList, type, changedColumnIndex ) => {
+      if(type === 'reset') {
+        filterManager.changeExtraFilter({type: null}); 
+      } else {
+        filterManager.changeExtraFilter({
+          [column as string] : filterList[changedColumnIndex].length ? filterList[changedColumnIndex][0] : null
+        }); 
+      }
+     
+    },
     customToolbar: () => (
       <ResetFilterButton
         onClick={() => filterManager.resetFilter()}

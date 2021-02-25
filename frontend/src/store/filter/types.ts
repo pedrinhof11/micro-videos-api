@@ -1,10 +1,8 @@
 import { AnyAction } from "redux";
-
 export interface Pagination {
   page: number;
   perPage: number;
 }
-
 export interface Order {
   sort?: string | null;
   dir?: string | null;
@@ -13,7 +11,9 @@ export interface Search {
   search: { value: any; [key: string]: any } | string | null;
 }
 
-export interface State extends Search, Pagination, Order {}
+export interface State extends Search, Pagination, Order {
+  extraFilter?: { [key: string] : any }
+}
 
 export interface SetSearchAction extends AnyAction {
   search: { value: any; [key: string]: any } | string | null;
@@ -32,7 +32,15 @@ export interface SetOrderAction extends AnyAction {
   dir: string | null;
 }
 
-export interface ResetStateAction extends AnyAction {}
+export interface ResetStateAction extends AnyAction {
+  state: State;
+}
+
+export interface UpdateExtraFilterAction extends AnyAction {
+  payload: {
+    [key: string] : any
+  }
+}
 
 export interface ActionTypes {
   SET_SEARCH: string;
@@ -40,6 +48,7 @@ export interface ActionTypes {
   SET_PER_PAGE: string;
   SET_ORDER: string;
   RESET_STATE: string;
+  UPDATE_EXTRA_FILTER: string;
 }
 export interface ActionCreators {
   setSearch(search: SetSearchAction["search"]): SetSearchAction;
@@ -49,7 +58,8 @@ export interface ActionCreators {
     sort: SetOrderAction["sort"],
     dir: SetOrderAction["dir"]
   ): SetOrderAction;
-  resetState(): AnyAction;
+  resetState(state: ResetStateAction): ResetStateAction;
+  updateExtraFilter(payload: UpdateExtraFilterAction): UpdateExtraFilterAction
 }
 
 export type Actions =
@@ -58,4 +68,5 @@ export type Actions =
   | SetPerPageAction
   | SetOrderAction
   | SetOrderAction
-  | ResetStateAction;
+  | ResetStateAction
+  | UpdateExtraFilterAction;

@@ -15,15 +15,22 @@ import { useSnackbar } from "notistack";
 import useFilter from "../../hooks/useFilter";
 import ResetFilterButton from "../../components/Table/ResetFilterButton";
 import { MUIDataTableOptions } from "mui-datatables";
+import { yup } from "../../utils/yup";
+import CategoryResource from "../../http/CategoryResource";
 
 const columns: TableColumn[] = [
-  { name: "id", label: "ID", options: { sort: false }, width: "33%" },
-  { name: "name", label: "Nome", width: "33%" },
+  { name: "id", label: "ID", options: { sort: false, filter: false }, width: "27%" },
+  { name: "name", label: "Nome", width: "20%", options: { filter: false } },
   {
     name: "categories",
     label: "Categorias",
-    width: "33%",
+    width: "28%",
     options: {
+      sort: false,
+      filterType: "multiselect",
+      filterOptions: {
+        names: []
+      },
       customBodyRender: (categories) => {
         return (categories as any)
           .map((value: Category) => value.name)
@@ -34,8 +41,9 @@ const columns: TableColumn[] = [
   {
     name: "is_active",
     label: "Ativo?",
-    width: "4%",
+    width: "5%",
     options: {
+      filter: false,
       customBodyRender: (value) => {
         return (value as any) ? (
           <Chip label="Sim" color="primary" />
@@ -50,6 +58,7 @@ const columns: TableColumn[] = [
     label: "Criado em",
     width: "10%",
     options: {
+      filter: false,
       customBodyRender: (value) => (
         <span>{dateFormatFromIso(value, "dd/MM/yyyy")}</span>
       ),
@@ -58,8 +67,9 @@ const columns: TableColumn[] = [
   {
     name: "actions",
     label: "Ações",
-    width: "13%",
+    width: "10%",
     options: {
+      filter: false,
       customBodyRender: (value, tableMeta) => {
         return (
           <IconButton
@@ -82,6 +92,7 @@ const rowsPerPage = 15;
 const rowsPerPageOptions = [15, 25, 50];
 const GenresTable = () => {
   const [genres, setGenres] = useState<Genre[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const isMountedRef = useIsMountedRef();
   const snackbar = useSnackbar();
   const [loading, setLoading] = useState<boolean>(false);
@@ -98,17 +109,61 @@ const GenresTable = () => {
     rowsPerPage,
     rowsPerPageOptions,
     tableRef,
+    extraFilter: {
+      createValidationSchema() {
+        return yup.object().shape({
+          categories: yup.array()
+          .nullable()
+          .transform((value) => !value || value === "" ? undefined : value.split(','))
+          .default(null)
+        })
+      },
+      formatSearchParams(debouncedState){
+        return debouncedState.extraFilter ? {
+          ...(debouncedState.extraFilter.categories && { categories: debouncedState.extraFilter.categories.join(',') })
+        } : undefined
+      },
+      getStateFromUrl(queryParams) {
+        return {
+          categories: queryParams.get('categories')
+        }
+      }
+    }
   });
+
+  const columnCategories = columns.find(c => c.name === 'categories');
+  const categoriesfilterValue = filter.extraFilter?.categories;
+  columnCategories!.options!.filterList = categoriesfilterValue ? [...categoriesfilterValue] : [];
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await CategoryResource.list({ all: true });
+        if (isMountedRef.current) {
+          setCategories(data.data);
+          
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    columnCategories!.options!.filterOptions!.names = categories.map(category => category.name)
+  }, [columnCategories, categories]);
 
   useEffect(() => {
     filterManager.pushHistory();
     (async () => {
       setLoading(true);
       try {
-        const { search, ...params } = debouncedFilter as any;
+        const { search, extraFilter, ...params } = debouncedFilter as any;
         const { data } = await GenreResource.list({
           ...params,
           search: search?.value !== undefined ? search.value : search,
+          ...(extraFilter?.categories && {categories: extraFilter.categories})
         });
         if (isMountedRef.current) {
           setGenres(data.data);
@@ -126,12 +181,7 @@ const GenresTable = () => {
       }
     })();
     // eslint-disable-next-line
-  }, [debouncedFilter, snackbar, isMountedRef]);
-
-  useEffect(() => {
-    filterManager.replaceHistory();
-    // eslint-disable-next-line
-  }, []);
+  }, [debouncedFilter, isMountedRef, snackbar, setTotalRecords]);
 
   const options: MUIDataTableOptions = {
     serverSide: true,
@@ -140,6 +190,16 @@ const GenresTable = () => {
     rowsPerPage: filter.perPage,
     rowsPerPageOptions,
     count: totalRecords,
+    onFilterChange: (column, filterList, type, changedColumnIndex ) => {
+      if(type === 'reset') {
+        filterManager.changeExtraFilter({categories: null}); 
+      } else {
+        filterManager.changeExtraFilter({
+          [column as string] : filterList[changedColumnIndex].length ? filterList[changedColumnIndex] : null
+        }); 
+      }
+     
+    },
     customToolbar: () => (
       <ResetFilterButton
         onClick={() => filterManager.resetFilter()}
